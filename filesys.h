@@ -1,193 +1,192 @@
 #ifndef _FILESYS_H
-#define _FILESYS_H 
- 
-#define delete 		dele     		//delete ÔÚc++ÀïÊÇ±£Áô×Ö  by tangfl
-//#define exit(a)		return			//½¨ÒéÊ¹ÓÃ return         by tangfl 
+#define _FILESYS_H
 
-//All Defines
-#define BLOCKSIZ        512			//Ã¿¸ö¿éµÄ´óÐ¡
-#define SYSOPENFILE     40
-#define DIRNUM          128			//Ò»¸öÄ¿Â¼ÏÂ ×î¶à ×ÓÄ¿Â¼Êý
-#define DIRSIZ          12			//Ä¿Â¼Ãû³¤¶È windows32ÏÂint³¤¶ÈÎª4 xiao 14->12
-#define PWDSIZ 			12			//ÃÜÂë×î´ó³¤¶È
-#define PWDNUM 			32
-#define NOFILE   		20			//ÓÃ»§×î¶à´ò¿ªÎÄ¼þÊý
-#define NADDR  			10			//i½ÚµãÄÚ´æ´¢
-#define NHINO 			128			//hashÊý  ?????????/* must be power of 2 */
-#define USERNUM 		10
-#define DINODESIZ 		52			//?????? int=4 ¹Ê¶àÁË2*NADRR µ«Ô´´úÂëÖÐÎªlong£¬¸Ã×öshort Ó¦¸ÃÎª50×Ö½Ú£¬´Ë´¦¿ÉÄÜÏµÍ³ÎªÁË¶ÔÆëÄÚ´æ£¬¹ÊÈç´Ëµ÷Õûxiao 32->52
+#define delete dele // delete ï¿½ï¿½c++ï¿½ï¿½ï¿½Ç±ï¿½ï¿½ï¿½ï¿½ï¿½  by tangfl
+// #define exit(a)		return			//ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ return         by tangfl
 
+// All Defines
+#define BLOCKSIZ 512 // Ã¿ï¿½ï¿½ï¿½ï¿½Ä´ï¿½Ð¡
+#define SYSOPENFILE 40
+#define DIRNUM 128 // Ò»ï¿½ï¿½Ä¿Â¼ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¿Â¼ï¿½ï¿½
+#define DIRSIZ 12  // Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ windows32ï¿½ï¿½intï¿½ï¿½ï¿½ï¿½Îª4 xiao 14->12
+#define PWDSIZ 12  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ó³¤¶ï¿½
+#define PWDNUM 32
+#define NOFILE 20 // ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
+#define NADDR 10  // iï¿½Úµï¿½ï¿½Ú´æ´¢
+#define NHINO 128 // hashï¿½ï¿½  ?????????/* must be power of 2 */
+#define USERNUM 10
+#define DINODESIZ 52 //?????? int=4 ï¿½Ê¶ï¿½ï¿½ï¿½2*NADRR ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªlongï¿½ï¿½ï¿½ï¿½ï¿½ï¿½short Ó¦ï¿½ï¿½Îª50ï¿½Ö½Ú£ï¿½ï¿½Ë´ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³Îªï¿½Ë¶ï¿½ï¿½ï¿½ï¿½Ú´æ£¬ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½xiao 32->52
 
 /*filesys*/
-#define DINODEBLK  		32							//i½ÚµãÕ¼ÓÃµÄ¿éÊý
-#define FILEBLK   		512							//Êý¾Ý¿éÊý
-#define NICFREE  		50							//³¬¼¶¿éÄÚ¿ÕÏÐ¿é¶ÑÕ»´óÐ¡
-#define NICINOD  		50							//³¬¼¶¿éÄÚ¿ÕÏÐi½ÚµãÊý×é´óÐ¡
-#define DINODESTART  	(2*BLOCKSIZ)				//i½Úµã¿ªÊ¼µØÖ· ¿Õ³ö1024£¬µÚÒ»¸öÎªÒýµ¼Çø£¬µÚ¶þ¿éÎª³¬¼¶¿é
-#define DATASTART  		((2+DINODEBLK)*BLOCKSIZ)	//Êý¾ÝÇø¿ªÊ¼µØÖ· DINODESTART+DINODEBLK*BLOCKSIZ	/*d:17408    0x4400*/
-
+#define DINODEBLK 32						   // iï¿½Úµï¿½Õ¼ï¿½ÃµÄ¿ï¿½ï¿½ï¿½
+#define FILEBLK 512							   // ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½
+#define NICFREE 50							   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½Ð¿ï¿½ï¿½Õ»ï¿½ï¿½Ð¡
+#define NICINOD 50							   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½iï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡
+#define DINODESTART (2 * BLOCKSIZ)			   // iï¿½Úµã¿ªÊ¼ï¿½ï¿½Ö· ï¿½Õ³ï¿½1024ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define DATASTART ((2 + DINODEBLK) * BLOCKSIZ) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Ö· DINODESTART+DINODEBLK*BLOCKSIZ	/*d:17408    0x4400*/
 
 /*di_mode*/
-#define DIEMPTY   		00000						//¿ÕÈ¨ÏÞ
-#define DIFILE      	01000						//ÀàÐÍ ÎÄ¼þ
-#define DIDIR     		02000						//ÀàÐÍ Ä¿Â¼
+#define DIEMPTY 00000 // ï¿½ï¿½È¨ï¿½ï¿½
+#define DIFILE 01000  // ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¼ï¿½
+#define DIDIR 02000	  // ï¿½ï¿½ï¿½ï¿½ Ä¿Â¼
 
-#define UDIREAD 		00001						//ÓÃ»§È¨ÏÞ
-#define UDIWRITE  		00002
-#define UDIEXICUTE  	00004
-#define GDIREAD   		00010						//ÓÃ»§×éÈ¨ÏÞ
-#define GDIWRITE  		00020
-#define GDIEXICUTE  	00040
-#define ODIREAD  		00100						//pubilcÈ¨ÏÞ
-#define ODIWRITE 		00200
-#define ODIEXICUTE 		00400
+#define UDIREAD 00001 // ï¿½Ã»ï¿½È¨ï¿½ï¿½
+#define UDIWRITE 00002
+#define UDIEXICUTE 00004
+#define GDIREAD 00010 // ï¿½Ã»ï¿½ï¿½ï¿½È¨ï¿½ï¿½
+#define GDIWRITE 00020
+#define GDIEXICUTE 00040
+#define ODIREAD 00100 // pubilcÈ¨ï¿½ï¿½
+#define ODIWRITE 00200
+#define ODIEXICUTE 00400
 
+#define READ 1
+#define WRITE 2
+#define EXICUTE 3
 
-#define READ  			1
-#define WRITE 			2
-#define EXICUTE 		3
-
-
-#define DEFAULTMODE 	00777					//Ä¬ÈÏÈ¨ÏÞ
-
+#define DEFAULTMODE 00777 // Ä¬ï¿½ï¿½È¨ï¿½ï¿½
 
 /* i_flag */
-#define  IUPDATE  		00002
+#define IUPDATE 00002
 
 /* s_fmod */
-#define SUPDATE  		00001 
+#define SUPDATE 00001
 
 /* f_flag */
-#define FREAD   		00001
-#define FWRITE   		00002
-#define FAPPEND   		00004
+#define FREAD 00001
+#define FWRITE 00002
+#define FAPPEND 00004
 
-//Includes
+// Includes
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
 #include <stdlib.h>
 
 /* error */
-#define DISKFULL  		65535
+#define DISKFULL 65535
 
 /* fseek origin */
-//#define SEEK_SET  		0
+// #define SEEK_SET  		0
 
-
-struct inode{
-	struct inode  	*i_forw;
-	struct inode  	*i_back;
-	char 			i_flag;
-	unsigned int  	i_ino;          /*´ÅÅÌi ½Úµã±êÖ¾*/
-	unsigned int  	i_count;     	/*ÒýÓÃ¼ÆÊý*/
-	unsigned short  di_number; 		/*¹ØÁªÎÄ¼þÊý¡£µ±Îª0 Ê±£¬ÔòÉ¾³ý¸ÃÎÄ¼þ*/
-	unsigned short  di_mode;  		/*´æÈ¡È¨ÏÞ*/
-	unsigned short  di_uid;
-	unsigned short  di_gid;
-	unsigned short  di_size;   		/*ÎÄ¼þ´óÐ¡*/
-	unsigned int   	di_addr[NADDR];   /*ÎïÀí¿éºÅ*/
+struct inode
+{
+	struct inode *i_forw;
+	struct inode *i_back;
+	char i_flag;
+	unsigned int i_ino;		  /*ï¿½ï¿½ï¿½ï¿½i ï¿½Úµï¿½ï¿½Ö¾*/
+	unsigned int i_count;	  /*ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½*/
+	unsigned short di_number; /*ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0 Ê±ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½*/
+	unsigned short di_mode;	  /*ï¿½ï¿½È¡È¨ï¿½ï¿½*/
+	unsigned short di_uid;
+	unsigned short di_gid;
+	unsigned short di_size;		 /*ï¿½Ä¼ï¿½ï¿½ï¿½Ð¡*/
+	unsigned int di_addr[NADDR]; /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 };
 
-struct dinode{
-	unsigned short 	di_number; 		/*¹ØÁªÎÄ¼þÊý*/
-	unsigned short 	di_mode; 		/*´æÈ¡È¨ÏÞ*/
-	unsigned short 	di_uid;
-	unsigned short 	di_gid;
-	unsigned short 	di_size;  		/*ÎÄ¼þ´óÐ¡*/
-	unsigned int 	di_addr[NADDR];   /*ÎïÀí¿éºÅ*/
+struct dinode
+{
+	unsigned short di_number; /*ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½*/
+	unsigned short di_mode;	  /*ï¿½ï¿½È¡È¨ï¿½ï¿½*/
+	unsigned short di_uid;
+	unsigned short di_gid;
+	unsigned short di_size;		 /*ï¿½Ä¼ï¿½ï¿½ï¿½Ð¡*/
+	unsigned int di_addr[NADDR]; /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 };
 
-
-struct direct{
+struct direct
+{
 	char d_name[DIRSIZ];
 	unsigned int d_ino;
 };
 
-struct filsys{
-	unsigned short  	s_isize;   			/*i½Úµã¿é¿éÊý*/
-	unsigned long   	s_fsize;   			/*Êý¾Ý¿é¿éÊý*/
-	unsigned int   		s_nfree;    		/*¿ÕÏÐ¿é*/
-	unsigned short  	s_pfree;  			/*¿ÕÏÐ¿éÖ¸Õë*/ 
-	unsigned int  		s_free[NICFREE];  	/*¿ÕÏÐ¿é¶ÑÕ»*/
-	
-	unsigned int  		s_ninode;  			/*number of free inode in s_inode*/
-	short int 			s_pinode;  			/*pointer of the sinode*/
-	unsigned int  		s_inode[NICINOD];   /*¿ÕÏÐi½ÚµãÊý×é*/
-	unsigned int 		s_rinode;    		/*remember inode*/
+struct filsys
+{
+	unsigned short s_isize;		  /*iï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½*/
+	unsigned long s_fsize;		  /*ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½*/
+	unsigned int s_nfree;		  /*ï¿½ï¿½ï¿½Ð¿ï¿½*/
+	unsigned short s_pfree;		  /*ï¿½ï¿½ï¿½Ð¿ï¿½Ö¸ï¿½ï¿½*/
+	unsigned int s_free[NICFREE]; /*ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½Õ»*/
 
-	char 				s_fmod;  			/*³¬¼¶¿éÐÞ¸Ä±êÖ¾*/
-	};
+	unsigned int s_ninode;		   /*number of free inode in s_inode*/
+	short int s_pinode;			   /*pointer of the sinode*/
+	unsigned int s_inode[NICINOD]; /*ï¿½ï¿½ï¿½ï¿½iï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½*/
+	unsigned int s_rinode;		   /*remember inode*/
 
-struct pwd{
-	unsigned short 		p_uid;
-	unsigned short 		p_gid;
-	char 				password [PWDSIZ];
+	char s_fmod; /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Ä±ï¿½Ö¾*/
 };
 
-struct dir{
-	struct direct 		direct[DIRNUM];
-	int 				size;  				/*µ±Ç°Ä¿Â¼´óÐ¡*/
+struct pwd
+{
+	unsigned short p_uid;
+	unsigned short p_gid;
+	char password[PWDSIZ];
 };
 
-struct hinode{
-	struct inode 		*i_forw;   /*HASG±íÖ¸Õë*/
+struct dir
+{
+	struct direct direct[DIRNUM];
+	int size; /*ï¿½ï¿½Ç°Ä¿Â¼ï¿½ï¿½Ð¡*/
 };
 
-struct file{
-	char 			f_flag;    		/*ÎÄ¼þ²Ù×÷±êÖ¾*/
-	unsigned int 	f_count;  		/*ÒýÓÃ¼ÆÊý*/
-	struct inode 	*f_inode; 		/*Ö¸ÏòÄÚ´æi½Úµã*/
-	unsigned long 	f_off;   		/*read/write character pointer*/ 
+struct hinode
+{
+	struct inode *i_forw; /*HASGï¿½ï¿½Ö¸ï¿½ï¿½*/
 };
 
-struct user{
-	unsigned short 	u_default_mode;
-	unsigned short 	u_uid;
-	unsigned short 	u_gid;
-	unsigned short 	u_ofile[NOFILE];   /*ÓÃ»§´ò¿ªÎÄ¼þ±í*/
+struct file
+{
+	char f_flag;		   /*ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾*/
+	unsigned int f_count;  /*ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½*/
+	struct inode *f_inode; /*Ö¸ï¿½ï¿½ï¿½Ú´ï¿½iï¿½Úµï¿½*/
+	unsigned long f_off;   /*read/write character pointer*/
 };
-	
-//all variables
-extern struct hinode   hinode[NHINO];
-extern struct dir      dir;           /*µ±Ç°Ä¿Â¼(ÔÚÄÚ´æÖÐÈ«²¿¶ÁÈë)*/
-extern struct file     sys_ofile[SYSOPENFILE];
-extern struct filsys   filsys;        /*ÄÚ´æÖÐµÄ³¬¼¶¿é*/
-extern struct pwd      pwd[PWDNUM];
-extern struct user     user[USERNUM];
-//extern struct file     *fd;           /*the file system column of all the system*/    //xiao
-extern struct inode    *cur_path_inode;
-extern int             user_id;
-extern char            disk[(DINODEBLK+FILEBLK+2)*BLOCKSIZ];
+
+struct user
+{
+	unsigned short u_default_mode;
+	unsigned short u_uid;
+	unsigned short u_gid;
+	unsigned short u_ofile[NOFILE]; /*ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½*/
+};
+
+// all variables
+extern struct hinode hinode[NHINO];
+extern struct dir dir; /*ï¿½ï¿½Ç°Ä¿Â¼(ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)*/
+extern struct file sys_ofile[SYSOPENFILE];
+extern struct filsys filsys; /*ï¿½Ú´ï¿½ï¿½ÐµÄ³ï¿½ï¿½ï¿½ï¿½ï¿½*/
+extern struct pwd pwd[PWDNUM];
+extern struct user user[USERNUM];
+// extern struct file     *fd;           /*the file system column of all the system*/    //xiao
+extern struct inode *cur_path_inode;
+extern int user_id;
+extern char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
 
 // all functions
-extern struct        inode *iget(unsigned int);
-extern void          iput(struct inode *);
-extern unsigned int  balloc(unsigned int);
-extern unsigned int  balloc();
-extern void          bfree(unsigned int);
-extern struct inode* ialloc();
-extern void          ifree(unsigned int);
-extern int			 namei(char *);
+extern struct inode *iget(unsigned int);
+extern void iput(struct inode *);
+extern unsigned int balloc(unsigned int);
+extern unsigned int balloc();
+extern void bfree(unsigned int);
+extern struct inode *ialloc();
+extern void ifree(unsigned int);
+extern int namei(char *);
 extern unsigned short iname(char *);
-extern unsigned int  access(unsigned int,struct inode *,unsigned short);
-extern void          _dir();
-extern void          mkdir(char *);
-extern void          chdir(char *);
-extern short		 open(int,char*,char);
-extern int           creat(unsigned int,char *,unsigned short);
-extern unsigned int  read(int fd, char *buf, unsigned int size);
-extern unsigned int  write(int fd,char *buf,unsigned int size);
-extern int           login(unsigned short, char *);
-extern int           logout(unsigned short);
-extern void          install();
-extern void          format();
-extern void          close(unsigned int,unsigned short);
-extern void          halt();
-extern void          delete(char *);
-extern int 			 shell(int user_id,char *str);
+extern unsigned int access(unsigned int, struct inode *, unsigned short);
+extern void _dir();
+extern void mkdir(char *);
+extern void chdir(char *);
+extern short open(int, char *, char);
+extern int creat(unsigned int, char *, unsigned short);
+extern unsigned int read(int fd, char *buf, unsigned int size);
+extern unsigned int write(int fd, char *buf, unsigned int size);
+extern int login(unsigned short, char *);
+extern int logout(unsigned short);
+extern void install();
+extern void format();
+extern void close(unsigned int, unsigned short);
+extern void halt();
+extern void delete(char *);
+extern int shell(int user_id, char *str);
 
 #endif
-
-
-

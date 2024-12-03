@@ -1,35 +1,27 @@
 #include <stdio.h>
-#include "filesys.h" 
- 
-void delete(char *filename){
+#include "filesys.h"
+
+void delete(char *filename)
+{
 	unsigned int dirid;
 	struct inode *inode;
 
 	dirid = namei(filename);
-	if (dirid == -1){
-		printf("ÎÄ¼ş²»´æÔÚ£¬Çë¼ì²é!\n"); 
+	if (dirid == -1)
+	{
+		printf("æ–‡ä»¶ä¸å­˜åœ¨ï¼Œè¯·æ£€æŸ¥!\n");
 		return;
 	}
 	inode = iget(dir.direct[dirid].d_ino);
-	if(!(inode->di_mode &DIFILE)){
-		printf("¶ÔÏó²»ÊÇÎÄ¼ş£¬Çë¼ì²é£¡\n");
+	if (!(inode->di_mode & DIFILE))
+	{
+		printf("å¯¹è±¡ä¸æ˜¯æ–‡ä»¶ï¼Œè¯·æ£€æŸ¥ï¼\n");
 		iput(inode);
 		return;
 	}
 	dir.direct[dirid].d_ino = DIEMPTY;
-	dir.size --;
+	dir.size--;
 	inode->di_number--;
 	iput(inode);
 	return;
 }
-
-
-
-
-
-
-
-
-
-
-
