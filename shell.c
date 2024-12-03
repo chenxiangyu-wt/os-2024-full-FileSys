@@ -27,7 +27,7 @@ int shell(int user_id, char *str)
 {
 	char seps[] = " \t\n\0";
 	char *token, *tstr, *buf;
-	unsigned short mode, fd;
+	short mode, fd;
 	int cid, size;
 	token = strtok(str, seps);
 	if (token == NULL)
@@ -68,7 +68,7 @@ int shell(int user_id, char *str)
 		token = strtok(NULL, seps);
 		if (token != NULL)
 		{
-			sscanf(token, "%o", &mode);
+			sscanf(token, "%ho", &mode);
 		}
 		mode = mode | DIFILE | 0700;
 		fd = creat(user_id, tstr, mode);
@@ -107,7 +107,7 @@ int shell(int user_id, char *str)
 		{
 			sscanf(token, "%d", &size);
 		}
-		fd = open(user_id, tstr, char(mode));
+		fd = open(user_id, tstr, (char)mode);
 		buf = (char *)malloc(size);
 		size = write(fd, buf, size);
 		printf("%d bytes have been writed in file %s.\n", size, tstr);
