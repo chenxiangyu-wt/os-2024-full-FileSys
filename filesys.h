@@ -18,7 +18,7 @@
 #define DINODESIZ 52 //?????? int=4 故多了2*NADRR 但源代码中为long，该做short 应该为50字节，此处可能系统为了对齐内存，故如此调整xiao 32->52
 
 /*filesys*/
-#define DINODEBLK 32						   // i节点占用的块数
+#define DINODEBLK 32						   // i节点占用的块数namei
 #define FILEBLK 512							   // 数据块数
 #define NICFREE 50							   // 超级块内空闲块堆栈大小
 #define NICINOD 50							   // 超级块内空闲i节点数组大小
@@ -102,18 +102,18 @@ struct direct
 
 struct filsys
 {
-	unsigned short s_isize;		  /*i节点块块数*/
-	unsigned long s_fsize;		  /*数据块块数*/
-	unsigned int s_nfree;		  /*空闲块*/
-	unsigned short s_pfree;		  /*空闲块指针*/
-	unsigned int s_free[NICFREE]; /*空闲块堆栈*/
+	unsigned short s_isize;		  /* i 节点块块数 */
+	unsigned long s_fsize;		  /* 数据块块数 */
+	unsigned int s_nfree;		  /* 空闲块数 */
+	unsigned short s_pfree;		  /* 空闲块指针 */
+	unsigned int s_free[NICFREE]; /* 空闲块堆栈 */
 
-	unsigned int s_ninode;		   /*number of free inode in s_inode*/
-	short int s_pinode;			   /*pointer of the sinode*/
-	unsigned int s_inode[NICINOD]; /*空闲i节点数组*/
-	unsigned int s_rinode;		   /*remember inode*/
+	unsigned int s_ninode;		   /* 空闲 i 节点数 */
+	unsigned short s_pinode;	   /* 空闲 i 节点指针 */
+	unsigned int s_inode[NICINOD]; /* 空闲 i 节点数组 */
+	unsigned int s_rinode;		   /* 记录的 i 节点 */
 
-	char s_fmod; /*超级块修改标志*/
+	char s_fmod; /* 超级块修改标志 */
 };
 
 struct pwd
@@ -126,7 +126,7 @@ struct pwd
 struct dir
 {
 	struct direct direct[DIRNUM];
-	int size; /*当前目录大小*/
+	unsigned int size; /* 当前目录大小 */
 };
 
 struct hinode
@@ -136,10 +136,10 @@ struct hinode
 
 struct file
 {
-	char f_flag;		   /*文件操作标志*/
-	unsigned int f_count;  /*引用计数*/
-	struct inode *f_inode; /*指向内存i节点*/
-	unsigned long f_off;   /*read/write character pointer*/
+	char f_flag;		   /* 文件操作标志 */
+	unsigned int f_count;  /* 引用计数 */
+	struct inode *f_inode; /* 指向内存 i 节点 */
+	unsigned long f_off;   /* 读/写字符指针偏移量 */
 };
 
 struct user
@@ -159,7 +159,7 @@ extern struct pwd pwd[PWDNUM];
 extern struct user user[USERNUM];
 // extern struct file     *fd;           /*the file system column of all the system*/    //xiao
 extern struct inode *cur_path_inode;
-extern int user_id;
+extern int user_id; /* 用户 ID */
 extern char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
 
 // all functions
@@ -170,14 +170,14 @@ extern unsigned int balloc();
 extern void bfree(unsigned int);
 extern struct inode *ialloc();
 extern void ifree(unsigned int);
-extern int namei(char *);
-extern unsigned short iname(char *);
+extern int namei(const char *);
+extern unsigned short iname(const char *);
 extern unsigned int access(unsigned int, struct inode *, unsigned short);
 extern void _dir();
-extern void mkdir(char *);
-extern void chdir(char *);
-extern short open(int, char *, char);
-extern int creat(unsigned int, char *, unsigned short);
+extern void mkdir(const char *);
+extern void chdir(const char *);
+extern short open(int, const char *, char);
+extern int creat(unsigned int, const char *, unsigned short);
 extern unsigned int read(int fd, char *buf, unsigned int size);
 extern unsigned int write(int fd, char *buf, unsigned int size);
 int login(unsigned short uid, const char *passwd);
@@ -186,7 +186,7 @@ extern void install();
 extern void format();
 extern void close(unsigned int, unsigned short);
 extern void halt();
-extern void delete(char *);
+extern void delete(const char *);
 extern int shell(int user_id, char *str);
 
 #endif

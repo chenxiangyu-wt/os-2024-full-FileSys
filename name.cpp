@@ -5,7 +5,7 @@
 namei函数：参数：要查找的文件名。返回文件对应的内存目录项标号i；如果返回-1表示没有该文件。
 功能：查找文件在当前目录下对应的内存目录项的号；
 */
-int namei(char *name)
+int namei(const char *name)
 {
 	int i;
 
@@ -23,7 +23,7 @@ iname函数：功能：如果还有空目录项，为当前文件分配目录项
 		   参数：将要分配的文件名。
 		   返回：0没有空闲目录项；i分配的目录项号。
 */
-unsigned short iname(char *name)
+unsigned short iname(const char *name)
 {
 	int i, notfound = 1;
 

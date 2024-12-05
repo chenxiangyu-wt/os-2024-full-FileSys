@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "filesys.h"
 
-short open(int user_id, char *filename, char openmode)
+short open(int user_id, const char *filename, char openmode)
 {
 	unsigned int dinodeid;
 	struct inode *inode;

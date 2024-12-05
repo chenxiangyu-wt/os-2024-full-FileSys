@@ -48,7 +48,7 @@ void _dir()
 	} // for
 	return;
 }
-void mkdir(char *dirname)
+void mkdir(const char *dirname)
 {
 	int dirid, dirpos;
 	struct inode *inode;
@@ -90,12 +90,12 @@ void mkdir(char *dirname)
 	return;
 }
 
-void chdir(char *dirname)
+void chdir(const char *dirname)
 {
 	int dirid;
 	struct inode *inode;
 	unsigned short block;
-	int i, j, low = 0, high = 0;
+	int j, low = 0, high = 0;
 
 	dirid = namei(dirname);
 	if (dirid == -1)
@@ -109,7 +109,7 @@ void chdir(char *dirname)
 		printf("不是一个目录！\n");
 		return;
 	}
-	for (i = 0; i < dir.size; i++)
+	for (unsigned int i = 0; i < dir.size; i++)
 	{
 		if (dir.direct[i].d_ino == 0)
 		{
@@ -120,11 +120,11 @@ void chdir(char *dirname)
 		}
 	}
 	j = cur_path_inode->di_size % BLOCKSIZ ? 1 : 0;
-	for (i = 0; i < cur_path_inode->di_size / BLOCKSIZ + j; i++)
+	for (unsigned short i = 0; i < cur_path_inode->di_size / BLOCKSIZ + j; i++)
 	{
 		bfree(cur_path_inode->di_addr[i]);
 	}
-	for (i = 0; i < dir.size; i += BLOCKSIZ / (DIRSIZ + 4))
+	for (unsigned int i = 0; i < dir.size; i += BLOCKSIZ / (DIRSIZ + 4))
 	{
 		block = balloc();
 		cur_path_inode->di_addr[i] = block;
@@ -135,13 +135,13 @@ void chdir(char *dirname)
 	cur_path_inode = inode;
 
 	j = 0;
-	for (i = 0; i < inode->di_size / BLOCKSIZ + 1; i++)
+	for (unsigned short i = 0; i < inode->di_size / BLOCKSIZ + 1; i++)
 	{
 		memcpy(&dir.direct[j], disk + DATASTART + inode->di_addr[i] * BLOCKSIZ, BLOCKSIZ);
 		j += BLOCKSIZ / (DIRSIZ + 4);
 	}
 	dir.size = cur_path_inode->di_size / (DIRSIZ + 4);
-	for (i = dir.size; i < DIRNUM; i++)
+	for (unsigned int i = dir.size; i < DIRNUM; i++)
 	{
 		dir.direct[i].d_ino = 0;
 	}

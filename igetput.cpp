@@ -13,8 +13,6 @@ struct inode *iget(unsigned int dinodeid)
 	long addr;
 	struct inode *temp, *newinode;
 
-	int i;
-
 	inodeid = dinodeid % NHINO;			// 计算内存结点应该在第几个哈希队列里
 	if (hinode[inodeid].i_forw == NULL) // 若该哈希队列为空，内存结点一定未被创建
 		existed = 0;
@@ -67,7 +65,6 @@ void iput(struct inode *pinode)
 {
 	long addr;
 	unsigned int block_num;
-	int i;
 
 	if (pinode->i_count > 1) // 若引用计数>1
 	{
@@ -87,7 +84,7 @@ void iput(struct inode *pinode)
 		{
 			/* 删除磁盘i结点和文件对应的物理块 */
 			block_num = pinode->di_size / BLOCKSIZ;
-			for (i = 0; i < block_num; i++)
+			for (unsigned int i = 0; i < block_num; i++)
 				bfree(pinode->di_addr[i]);
 			ifree(pinode->i_ino);
 		}

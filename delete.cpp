@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "filesys.h"
 
-void delete(char *filename)
+void delete(const char *filename)
 {
 	int dirid;
 	struct inode *inode;

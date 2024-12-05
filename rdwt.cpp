@@ -4,7 +4,7 @@
 unsigned int read(int fd, char *buf, unsigned int size)
 {
 	unsigned long off;
-	int block, block_off, i, j;
+	unsigned int block, block_off, i, j;
 	struct inode *inode;
 	char *temp_buf;
 
@@ -45,7 +45,7 @@ unsigned int read(int fd, char *buf, unsigned int size)
 unsigned int write(int fd, char *buf, unsigned int size)
 {
 	unsigned long off;
-	int block, block_off, i, j;
+	unsigned int block, block_off, i, j;
 	struct inode *inode;
 	char *temp_buf;
 
