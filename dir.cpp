@@ -32,7 +32,7 @@ void _dir()
 			printf("\ti_ino->%d\t", temp_inode->i_ino);
 			if (temp_inode->di_mode & DIFILE)
 			{
-				printf(" %ld ", temp_inode->di_size);
+				printf(" %d ", temp_inode->di_size);
 				printf("block chain:");
 				j = (temp_inode->di_size % BLOCKSIZ) ? 1 : 0;
 				for (k = 0; k < temp_inode->di_size / BLOCKSIZ + j; k++)
@@ -92,7 +92,7 @@ void mkdir(char *dirname)
 
 void chdir(char *dirname)
 {
-	unsigned int dirid;
+	int dirid;
 	struct inode *inode;
 	unsigned short block;
 	int i, j, low = 0, high = 0;
@@ -106,7 +106,7 @@ void chdir(char *dirname)
 	inode = iget(dir.direct[dirid].d_ino);
 	if (!(inode->di_mode & DIDIR))
 	{
-		printf("%s不是一个目录！\n");
+		printf("不是一个目录！\n");
 		return;
 	}
 	for (i = 0; i < dir.size; i++)

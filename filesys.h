@@ -180,7 +180,7 @@ extern short open(int, char *, char);
 extern int creat(unsigned int, char *, unsigned short);
 extern unsigned int read(int fd, char *buf, unsigned int size);
 extern unsigned int write(int fd, char *buf, unsigned int size);
-extern int login(unsigned short, char *);
+int login(unsigned short uid, const char *passwd);
 extern int logout(unsigned short);
 extern void install();
 extern void format();

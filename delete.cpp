@@ -3,7 +3,7 @@
 
 void delete(char *filename)
 {
-	unsigned int dirid;
+	int dirid;
 	struct inode *inode;
 
 	dirid = namei(filename);
