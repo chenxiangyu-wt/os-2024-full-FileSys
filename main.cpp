@@ -1,5 +1,6 @@
-#include <stdio.h>
+#include <iostream>
 #include "filesys.h"
+#include "CommandLine.hpp"
 
 struct hinode hinode[NHINO];
 
@@ -18,24 +19,33 @@ int main()
 	int username;
 	char password[16];
 	user_id = -1;
+
 	format();
 	install();
+
 	printf("Welcome to mini filesystem!\n");
+
 	while (user_id == -1)
 	{
-		printf("Login:");
+		printf("Login: ");
 		scanf("%d", &username);
-		printf("Password:");
+		printf("Password: ");
 		scanf("%s", password);
 		user_id = login(username, password);
 	}
+
+	CommandLine commandLine;
+
+	std::string input;
 	do
 	{
-		printf("> ");
-		fflush(stdin);
-		fgets(str, sizeof(str), stdin);
-	} while (shell(user_id, str));
-	logout(2118);
+		std::cout << "> ";
+		std::getline(std::cin, input);
+
+	} while (commandLine.execute(input));
+
+	logout(user_id);
 	halt();
+
 	return 0;
 }

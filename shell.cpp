@@ -1,4 +1,5 @@
 #include "filesys.h"
+#include <unordered_map>
 #define CLEN 10
 #define CNUM 10
 // enum ctype
@@ -11,6 +12,7 @@ char commands[CNUM][CLEN] = {
 	"del",
 	"write",
 	"read"};
+
 int getcid(char *command)
 {
 	int i;
@@ -86,7 +88,7 @@ int shell(int user_id, char *str)
 			printf("del 命令的正确格式为del filename，请检查命令!\n");
 			break;
 		}
-		delete (token);
+		removeFile(token);
 		break;
 	case 6:
 		mode = WRITE;

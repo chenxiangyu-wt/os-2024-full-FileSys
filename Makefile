@@ -2,7 +2,7 @@
 CC = g++
 
 # 编译选项
-CFLAGS = -Wall -Wextra -std=c++17
+CFLAGS = -Wall -Wextra -std=c++11
 
 # 项目名
 TARGET = out/filesys
