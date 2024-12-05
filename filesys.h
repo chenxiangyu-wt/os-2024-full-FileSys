@@ -68,10 +68,10 @@
 /* fseek origin */
 // #define SEEK_SET  		0
 
-struct inode
+struct INode
 {
-	struct inode *i_forw;
-	struct inode *i_back;
+	struct INode *i_forw;
+	struct INode *i_back;
 	char i_flag;
 	unsigned int i_ino;		  /*磁盘i 节点标志*/
 	unsigned int i_count;	  /*引用计数*/
@@ -83,7 +83,7 @@ struct inode
 	unsigned int di_addr[NADDR]; /*物理块号*/
 };
 
-struct dinode
+struct Dinode
 {
 	unsigned short di_number; /*关联文件数*/
 	unsigned short di_mode;	  /*存取权限*/
@@ -93,13 +93,13 @@ struct dinode
 	unsigned int di_addr[NADDR]; /*物理块号*/
 };
 
-struct direct
+struct Direct
 {
 	char d_name[DIRSIZ];
 	unsigned int d_ino;
 };
 
-struct filsys
+struct FileSystem
 {
 	unsigned short s_isize;		  /* i 节点块块数 */
 	unsigned long s_fsize;		  /* 数据块块数 */
@@ -115,33 +115,33 @@ struct filsys
 	char s_fmod; /* 超级块修改标志 */
 };
 
-struct pwd
+struct Pwd
 {
 	unsigned short p_uid;
 	unsigned short p_gid;
 	char password[PWDSIZ];
 };
 
-struct dir
+struct Dir
 {
-	struct direct direct[DIRNUM];
+	struct Direct direct[DIRNUM];
 	unsigned int size; /* 当前目录大小 */
 };
 
-struct hinode
+struct Hinode
 {
-	struct inode *i_forw; /*HASG表指针*/
+	struct INode *i_forw; /*HASG表指针*/
 };
 
-struct file
+struct File
 {
 	char f_flag;		   /* 文件操作标志 */
 	unsigned int f_count;  /* 引用计数 */
-	struct inode *f_inode; /* 指向内存 i 节点 */
+	struct INode *f_inode; /* 指向内存 i 节点 */
 	unsigned long f_off;   /* 读/写字符指针偏移量 */
 };
 
-struct user
+struct User
 {
 	unsigned short u_default_mode;
 	unsigned short u_uid;
@@ -150,28 +150,28 @@ struct user
 };
 
 // all variables
-extern struct hinode hinode[NHINO];
-extern struct dir dir; /*当前目录(在内存中全部读入)*/
-extern struct file sys_ofile[SYSOPENFILE];
-extern struct filsys filsys; /*内存中的超级块*/
-extern struct pwd pwd[PWDNUM];
-extern struct user user[USERNUM];
+extern struct Hinode hinode[NHINO];
+extern struct Dir Dir; /*当前目录(在内存中全部读入)*/
+extern struct File sys_ofile[SYSOPENFILE];
+extern struct FileSystem FileSystem; /*内存中的超级块*/
+extern struct Pwd pwd[PWDNUM];
+extern struct User user[USERNUM];
 // extern struct file     *fd;           /*the file system column of all the system*/    //xiao
-extern struct inode *cur_path_inode;
+extern struct INode *cur_path_inode;
 extern int user_id; /* 用户 ID */
 extern char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
 
 // all functions
-extern struct inode *iget(unsigned int);
-extern void iput(struct inode *);
+extern struct INode *iget(unsigned int);
+extern void iput(struct INode *);
 extern unsigned int balloc(unsigned int);
 extern unsigned int balloc();
 extern void bfree(unsigned int);
-extern struct inode *ialloc();
+extern struct INode *ialloc();
 extern void ifree(unsigned int);
 extern int namei(const char *);
 extern unsigned short iname(const char *);
-extern unsigned int access(unsigned int, struct inode *, unsigned short);
+extern unsigned int access(unsigned int, struct INode *, unsigned short);
 extern void _dir();
 extern void mkdir(const char *);
 extern void chdir(const char *);

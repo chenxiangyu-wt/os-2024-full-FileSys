@@ -4,9 +4,9 @@
 
 void format()
 {
-	struct inode *inode;
-	struct direct dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
-	struct pwd passwd[32];
+	struct INode *inode;
+	struct Direct dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
+	struct Pwd passwd[32];
 	unsigned int block_buf[BLOCKSIZ / sizeof(int)];
 	int i, j;
 
@@ -86,26 +86,26 @@ void format()
 		strcpy(passwd[i].password, "            "); // PWDSIZ " "
 	}
 
-	memcpy(pwd, passwd, 32 * sizeof(struct pwd));
+	memcpy(pwd, passwd, 32 * sizeof(struct Pwd));
 	memcpy(disk + DATASTART + BLOCKSIZ * 2, passwd, BLOCKSIZ);
 	iput(inode);
 
 	/*2. initialize the superblock */
 
-	filsys.s_isize = DINODEBLK;
-	filsys.s_fsize = FILEBLK;
+	FileSystem.s_isize = DINODEBLK;
+	FileSystem.s_fsize = FILEBLK;
 
-	filsys.s_ninode = DINODEBLK * BLOCKSIZ / DINODESIZ - 4;
-	filsys.s_nfree = FILEBLK - 3;
+	FileSystem.s_ninode = DINODEBLK * BLOCKSIZ / DINODESIZ - 4;
+	FileSystem.s_nfree = FILEBLK - 3;
 
 	for (i = 0; i < NICINOD; i++)
 	{
 		/* begin with 4,    0,1,2,3, is used by main,etc,password */
-		filsys.s_inode[i] = 4 + i;
+		FileSystem.s_inode[i] = 4 + i;
 	}
 
-	filsys.s_pinode = 0;
-	filsys.s_rinode = NICINOD + 4;
+	FileSystem.s_pinode = 0;
+	FileSystem.s_rinode = NICINOD + 4;
 
 	block_buf[NICFREE - 1] = FILEBLK + 1; /*FILEBLK+1 is a flag of end*/
 	for (i = 0; i < NICFREE - 1; i++)
@@ -124,11 +124,11 @@ void format()
 	j = 1;
 	for (; i > 3; i--)
 	{
-		filsys.s_free[NICFREE - j] = i - 1;
+		FileSystem.s_free[NICFREE - j] = i - 1;
 		j++;
 	}
 
-	filsys.s_pfree = NICFREE - j + 1;
-	memcpy(disk + BLOCKSIZ, &filsys, sizeof(struct filsys));
+	FileSystem.s_pfree = NICFREE - j + 1;
+	memcpy(disk + BLOCKSIZ, &FileSystem, sizeof(struct FileSystem));
 	return;
 }

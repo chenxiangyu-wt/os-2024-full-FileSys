@@ -27,7 +27,7 @@ void halt()
 	} // for
 
 	/*3. write back the filesys to the disk*/
-	memcpy(disk + BLOCKSIZ, &filsys, sizeof(struct filsys));
+	memcpy(disk + BLOCKSIZ, &FileSystem, sizeof(struct FileSystem));
 
 	/*4. close the file system column*/
 

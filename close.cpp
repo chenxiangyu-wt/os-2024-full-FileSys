@@ -7,7 +7,7 @@
 *******************************************************/
 void close(unsigned int user_id, unsigned short cfd)
 {
-	struct inode *inode;
+	struct INode *inode;
 	inode = sys_ofile[user[user_id].u_ofile[cfd]].f_inode;
 	iput(inode);
 	sys_ofile[user[user_id].u_ofile[cfd]].f_count--;

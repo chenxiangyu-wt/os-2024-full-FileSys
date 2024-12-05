@@ -6,7 +6,7 @@ void install()
 {
 
 	/* 1. read the filsys from the superblock*/ // xiao
-	memcpy(&filsys, disk + BLOCKSIZ, sizeof(struct filsys));
+	memcpy(&FileSystem, disk + BLOCKSIZ, sizeof(struct FileSystem));
 
 	/* 2. initialize the inode hash chain*/
 	for (unsigned int i = 0; i < NHINO; i++)
@@ -32,21 +32,21 @@ void install()
 
 	/*5. read the main directory to initialize the dir*/
 	cur_path_inode = iget(1);
-	dir.size = cur_path_inode->di_size / (DIRSIZ + 4); // xiao 2-->4
+	Dir.size = cur_path_inode->di_size / (DIRSIZ + 4); // xiao 2-->4
 
 	for (unsigned int i = 0; i < DIRNUM; i++)
 	{
-		strcpy(dir.direct[i].d_name, "             ");
-		dir.direct[i].d_ino = 0;
+		strcpy(Dir.direct[i].d_name, "             ");
+		Dir.direct[i].d_ino = 0;
 	}
 	unsigned int i;
-	for (i = 0; i < dir.size / (BLOCKSIZ / (DIRSIZ + 4)); i++)
+	for (i = 0; i < Dir.size / (BLOCKSIZ / (DIRSIZ + 4)); i++)
 	{
-		memcpy(&dir.direct[(BLOCKSIZ / (DIRSIZ + 4)) * i],
+		memcpy(&Dir.direct[(BLOCKSIZ / (DIRSIZ + 4)) * i],
 			   disk + DATASTART + BLOCKSIZ * cur_path_inode->di_addr[i], DINODESIZ);
 	}
 
-	memcpy(&dir.direct[(BLOCKSIZ) / (DIRSIZ + 4) * i],
+	memcpy(&Dir.direct[(BLOCKSIZ) / (DIRSIZ + 4) * i],
 		   disk + DATASTART + BLOCKSIZ * cur_path_inode->di_addr[i], DINODESIZ);
 	return;
 }

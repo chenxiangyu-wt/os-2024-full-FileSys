@@ -2,14 +2,14 @@
 #include "filesys.h"
 #include "CommandLine.hpp"
 
-struct hinode hinode[NHINO];
+struct Hinode hinode[NHINO];
 
-struct dir dir;
-struct file sys_ofile[SYSOPENFILE];
-struct filsys filsys;
-struct pwd pwd[PWDNUM];
-struct user user[USERNUM];
-struct inode *cur_path_inode;
+struct Dir Dir;
+struct File sys_ofile[SYSOPENFILE];
+struct FileSystem FileSystem;
+struct Pwd pwd[PWDNUM];
+struct User user[USERNUM];
+struct INode *cur_path_inode;
 int user_id;
 char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
 char str[100];

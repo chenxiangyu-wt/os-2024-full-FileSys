@@ -4,7 +4,7 @@
 short open(int user_id, const char *filename, char openmode)
 {
 	unsigned int dinodeid;
-	struct inode *inode;
+	struct INode *inode;
 	int i, j, k;
 
 	dinodeid = namei(filename);
@@ -13,7 +13,7 @@ short open(int user_id, const char *filename, char openmode)
 		printf("\nfile does not existed!!!\n");
 		return -1;
 	}
-	inode = iget(dir.direct[dinodeid].d_ino);
+	inode = iget(Dir.direct[dinodeid].d_ino);
 	if (!(inode->di_mode & DIFILE))
 	{
 		printf("%s is not a file!!!\n", filename);

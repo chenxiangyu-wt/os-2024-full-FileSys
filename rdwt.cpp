@@ -5,7 +5,7 @@ unsigned int read(int fd, char *buf, unsigned int size)
 {
 	unsigned long off;
 	unsigned int block, block_off, i, j;
-	struct inode *inode;
+	struct INode *inode;
 	char *temp_buf;
 
 	inode = sys_ofile[user[user_id].u_ofile[fd]].f_inode;
@@ -46,7 +46,7 @@ unsigned int write(int fd, char *buf, unsigned int size)
 {
 	unsigned long off;
 	unsigned int block, block_off, i, j;
-	struct inode *inode;
+	struct INode *inode;
 	char *temp_buf;
 
 	inode = sys_ofile[user[user_id].u_ofile[fd]].f_inode;
@@ -60,7 +60,7 @@ unsigned int write(int fd, char *buf, unsigned int size)
 	block = ((off + size) - inode->di_size) / BLOCKSIZ; // ÉÐÐè¸öÊý
 	if (((off + size) - inode->di_size) % BLOCKSIZ)
 		block++;
-	if (filsys.s_nfree < block)
+	if (FileSystem.s_nfree < block)
 	{
 		printf("Not enough space to write so much bytes!\n");
 		return 0;

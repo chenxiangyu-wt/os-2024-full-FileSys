@@ -7,11 +7,11 @@
 /* 作用：	为磁盘i结点分配对应的内存i结点	*/
 /* 参数:	待分配的磁盘i结点号				*/
 /* 返回值：	指向对应的内存i结点的指针		*/
-struct inode *iget(unsigned int dinodeid)
+struct INode *iget(unsigned int dinodeid)
 {
 	int existed = 0, inodeid;
 	long addr;
-	struct inode *temp, *newinode;
+	struct INode *temp, *newinode;
 
 	inodeid = dinodeid % NHINO;			// 计算内存结点应该在第几个哈希队列里
 	if (hinode[inodeid].i_forw == NULL) // 若该哈希队列为空，内存结点一定未被创建
@@ -37,7 +37,7 @@ struct inode *iget(unsigned int dinodeid)
 	addr = DINODESTART + dinodeid * DINODESIZ;
 
 	/* 2. 分配一个内存i结点 */
-	newinode = (struct inode *)malloc(sizeof(struct inode));
+	newinode = (struct INode *)malloc(sizeof(struct INode));
 
 	/* 3. 用磁盘i结点初始化内存i结点 */
 	memcpy(&(newinode->di_number), disk + addr, DINODESIZ);
@@ -61,7 +61,7 @@ struct inode *iget(unsigned int dinodeid)
 /* 作用：	回收内存i结点					*/
 /* 参数:	指向待回收的内存i结点指针		*/
 /* 返回值：	无								*/
-void iput(struct inode *pinode)
+void iput(struct INode *pinode)
 {
 	long addr;
 	unsigned int block_num;

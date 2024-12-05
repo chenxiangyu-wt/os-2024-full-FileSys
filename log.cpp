@@ -90,7 +90,7 @@ int login(unsigned short uid, const char *passwd)
 int logout(unsigned short uid)
 {
 	int i, j, sys_no;
-	struct inode *inode;
+	struct INode *inode;
 
 	for (i = 0; i < USERNUM; i++)
 	{

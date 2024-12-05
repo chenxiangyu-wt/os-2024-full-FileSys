@@ -5,7 +5,7 @@
 参数：用户ID号；内存节点；要判断的权限
 功能：通过用户权限判断用户是否能对该文件进行相应的操作；权限够返回1，权限不够返回0。
 ***********************************************************************************/
-unsigned int access(unsigned int user_id, struct inode *inode, unsigned short mode)
+unsigned int access(unsigned int user_id, struct INode *inode, unsigned short mode)
 {
 	switch (mode)
 	{

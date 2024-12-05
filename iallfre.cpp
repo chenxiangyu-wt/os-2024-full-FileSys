@@ -2,24 +2,24 @@
 #include <string.h>
 #include "filesys.h"
 
-static struct dinode block_buf[BLOCKSIZ / DINODESIZ]; // 存放i节点的临时数组
+static struct Dinode block_buf[BLOCKSIZ / DINODESIZ]; // 存放i节点的临时数组
 /*****************************************************
 函数：ialloc
 功能：分配磁盘i节点，返回相应的内存i节点指针
 ******************************************************/
-struct inode *ialloc()
+struct INode *ialloc()
 {
-	struct inode *temp_inode;
+	struct INode *temp_inode;
 	unsigned int cur_di;
 	int i, count, block_end_flag;
 
 	// I界点分配时从低位到高位使用，并且分配的i节点也是由低到高
-	if (filsys.s_pinode == NICINOD)
+	if (FileSystem.s_pinode == NICINOD)
 	{
 		i = 0;
 		block_end_flag = 1;
-		count = filsys.s_pinode = filsys.s_ninode > NICINOD ? 0 : (NICINOD - filsys.s_ninode);
-		cur_di = filsys.s_rinode;
+		count = FileSystem.s_pinode = FileSystem.s_ninode > NICINOD ? 0 : (NICINOD - FileSystem.s_ninode);
+		cur_di = FileSystem.s_rinode;
 		while (count < NICINOD)
 		{ // 空闲i节点数组没有装满且磁盘中还有空闲i节点
 			if (block_end_flag)
@@ -38,35 +38,35 @@ struct inode *ialloc()
 				block_end_flag = 1;
 				continue;
 			}
-			filsys.s_inode[count++] = cur_di;
+			FileSystem.s_inode[count++] = cur_di;
 		}
-		filsys.s_rinode = cur_di; // 重新设铭记i节点
+		FileSystem.s_rinode = cur_di; // 重新设铭记i节点
 	}
 	/*分配空闲i节点*/
-	temp_inode = iget(filsys.s_inode[filsys.s_pinode]);
-	memcpy(disk + DINODESTART + filsys.s_inode[filsys.s_pinode] * DINODESIZ,
-		   &temp_inode->di_number, sizeof(struct dinode));
-	filsys.s_pinode++;
-	filsys.s_ninode--;
-	filsys.s_fmod = SUPDATE;
+	temp_inode = iget(FileSystem.s_inode[FileSystem.s_pinode]);
+	memcpy(disk + DINODESTART + FileSystem.s_inode[FileSystem.s_pinode] * DINODESIZ,
+		   &temp_inode->di_number, sizeof(struct Dinode));
+	FileSystem.s_pinode++;
+	FileSystem.s_ninode--;
+	FileSystem.s_fmod = SUPDATE;
 	return temp_inode;
 }
 
 void ifree(unsigned int dinodeid)
 {
-	filsys.s_ninode--; // 空闲i节点数减一
-	if (filsys.s_pinode != 0)
+	FileSystem.s_ninode--; // 空闲i节点数减一
+	if (FileSystem.s_pinode != 0)
 	{ // 空闲i节点数组未满
-		filsys.s_pinode--;
-		filsys.s_inode[filsys.s_pinode] = dinodeid;
+		FileSystem.s_pinode--;
+		FileSystem.s_inode[FileSystem.s_pinode] = dinodeid;
 	}
 	else
 	{
-		if (dinodeid < filsys.s_rinode)
+		if (dinodeid < FileSystem.s_rinode)
 		{
 			// 新释放i节点号小于铭记i节点号，则丢弃原铭记i节点，设新的铭记i节点为新释放的铭记i节点
-			filsys.s_inode[NICINOD] = dinodeid;
-			filsys.s_rinode = dinodeid;
+			FileSystem.s_inode[NICINOD] = dinodeid;
+			FileSystem.s_rinode = dinodeid;
 		}
 	}
 	return;

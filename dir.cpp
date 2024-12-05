@@ -6,16 +6,16 @@ void _dir()
 {
 	unsigned int di_mode;
 	int i, j, k; // xiao
-	struct inode *temp_inode;
+	struct INode *temp_inode;
 
-	printf("\n CURRENT DIRECTORY :%s\n", dir.direct[0].d_name);
-	printf("当前共有%d个文件/目录\n", dir.size);
+	printf("\n CURRENT DIRECTORY :%s\n", Dir.direct[0].d_name);
+	printf("当前共有%d个文件/目录\n", Dir.size);
 	for (i = 0; i < DIRNUM; i++)
 	{
-		if (dir.direct[i].d_ino != DIEMPTY)
+		if (Dir.direct[i].d_ino != DIEMPTY)
 		{
-			printf("%-14s", dir.direct[i].d_name);
-			temp_inode = iget(dir.direct[i].d_ino);
+			printf("%-14s", Dir.direct[i].d_name);
+			temp_inode = iget(Dir.direct[i].d_ino);
 			di_mode = temp_inode->di_mode & 00777;
 			for (j = 0; j < 9; j++)
 			{
@@ -51,8 +51,8 @@ void _dir()
 void mkdir(const char *dirname)
 {
 	int dirid, dirpos;
-	struct inode *inode;
-	struct direct buf[BLOCKSIZ / (DIRSIZ + 4)];
+	struct INode *inode;
+	struct Direct buf[BLOCKSIZ / (DIRSIZ + 4)];
 	unsigned int block;
 
 	dirid = namei(dirname);
@@ -68,8 +68,8 @@ void mkdir(const char *dirname)
 	}
 	dirpos = iname(dirname);				 // 取得在addr中的空闲项位置,并将目录名写到此项里
 	inode = ialloc();						 // 分配i节点
-	dir.direct[dirpos].d_ino = inode->i_ino; // 设置该目录的磁盘i节点号
-	dir.size++;								 // 目录数++
+	Dir.direct[dirpos].d_ino = inode->i_ino; // 设置该目录的磁盘i节点号
+	Dir.size++;								 // 目录数++
 
 	strcpy(buf[0].d_name, ".."); // 子目录的上一层目录 当前目录
 	buf[0].d_ino = cur_path_inode->i_ino;
@@ -93,7 +93,7 @@ void mkdir(const char *dirname)
 void chdir(const char *dirname)
 {
 	int dirid;
-	struct inode *inode;
+	struct INode *inode;
 	unsigned short block;
 	int j, low = 0, high = 0;
 
@@ -103,20 +103,20 @@ void chdir(const char *dirname)
 		printf("不存在目录%s！\n", dirname);
 		return;
 	}
-	inode = iget(dir.direct[dirid].d_ino);
+	inode = iget(Dir.direct[dirid].d_ino);
 	if (!(inode->di_mode & DIDIR))
 	{
 		printf("不是一个目录！\n");
 		return;
 	}
-	for (unsigned int i = 0; i < dir.size; i++)
+	for (unsigned int i = 0; i < Dir.size; i++)
 	{
-		if (dir.direct[i].d_ino == 0)
+		if (Dir.direct[i].d_ino == 0)
 		{
-			for (j = DIRNUM - 1; j >= 0 && dir.direct[j].d_ino == 0; j--)
+			for (j = DIRNUM - 1; j >= 0 && Dir.direct[j].d_ino == 0; j--)
 				;
-			memcpy(&dir.direct[i], &dir.direct[j], DIRSIZ + 4); // xiao
-			dir.direct[j].d_ino = 0;
+			memcpy(&Dir.direct[i], &Dir.direct[j], DIRSIZ + 4); // xiao
+			Dir.direct[j].d_ino = 0;
 		}
 	}
 	j = cur_path_inode->di_size % BLOCKSIZ ? 1 : 0;
@@ -124,26 +124,26 @@ void chdir(const char *dirname)
 	{
 		bfree(cur_path_inode->di_addr[i]);
 	}
-	for (unsigned int i = 0; i < dir.size; i += BLOCKSIZ / (DIRSIZ + 4))
+	for (unsigned int i = 0; i < Dir.size; i += BLOCKSIZ / (DIRSIZ + 4))
 	{
 		block = balloc();
 		cur_path_inode->di_addr[i] = block;
-		memcpy(disk + DATASTART + block * BLOCKSIZ, &dir.direct[i], BLOCKSIZ);
+		memcpy(disk + DATASTART + block * BLOCKSIZ, &Dir.direct[i], BLOCKSIZ);
 	}
-	cur_path_inode->di_size = dir.size * (DIRSIZ + 4);
+	cur_path_inode->di_size = Dir.size * (DIRSIZ + 4);
 	iput(cur_path_inode);
 	cur_path_inode = inode;
 
 	j = 0;
 	for (unsigned short i = 0; i < inode->di_size / BLOCKSIZ + 1; i++)
 	{
-		memcpy(&dir.direct[j], disk + DATASTART + inode->di_addr[i] * BLOCKSIZ, BLOCKSIZ);
+		memcpy(&Dir.direct[j], disk + DATASTART + inode->di_addr[i] * BLOCKSIZ, BLOCKSIZ);
 		j += BLOCKSIZ / (DIRSIZ + 4);
 	}
-	dir.size = cur_path_inode->di_size / (DIRSIZ + 4);
-	for (unsigned int i = dir.size; i < DIRNUM; i++)
+	Dir.size = cur_path_inode->di_size / (DIRSIZ + 4);
+	for (unsigned int i = Dir.size; i < DIRNUM; i++)
 	{
-		dir.direct[i].d_ino = 0;
+		Dir.direct[i].d_ino = 0;
 	}
 
 	// end by xiao
