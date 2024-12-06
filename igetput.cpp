@@ -7,7 +7,7 @@
 /* 作用：	为磁盘i结点分配对应的内存i结点	*/
 /* 参数:	待分配的磁盘i结点号				*/
 /* 返回值：	指向对应的内存i结点的指针		*/
-struct INode *iget(unsigned int dinodeid)
+INode *iget(unsigned int dinodeid)
 {
 	int existed = 0, inodeid;
 	long addr;

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cstring>
 #include "filesys.h"
 
 unsigned int read(int fd, char *buf, unsigned int size)

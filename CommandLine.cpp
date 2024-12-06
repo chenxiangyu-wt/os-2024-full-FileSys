@@ -3,6 +3,27 @@
 #include <sstream>
 #include <cstdlib>
 
+// 构造函数
+CommandLine::CommandLine()
+{
+    command_map["exit"] = [this](const std::vector<std::string> &args)
+    { return cmdExit(args); };
+    command_map["dir"] = [this](const std::vector<std::string> &args)
+    { return cmdDir(args); };
+    command_map["mkdir"] = [this](const std::vector<std::string> &args)
+    { return cmdMkdir(args); };
+    command_map["cd"] = [this](const std::vector<std::string> &args)
+    { return cmdCd(args); };
+    command_map["mkfile"] = [this](const std::vector<std::string> &args)
+    { return cmdMkfile(args); };
+    command_map["del"] = [this](const std::vector<std::string> &args)
+    { return cmdDel(args); };
+    command_map["write"] = [this](const std::vector<std::string> &args)
+    { return cmdWrite(args); };
+    command_map["read"] = [this](const std::vector<std::string> &args)
+    { return cmdRead(args); };
+}
+
 // 输入解析
 std::vector<std::string> CommandLine::parseInput(const std::string &input)
 {
@@ -14,6 +35,26 @@ std::vector<std::string> CommandLine::parseInput(const std::string &input)
         tokens.push_back(token);
     }
     return tokens;
+}
+
+int CommandLine::execute(const std::string &input)
+{
+    std::vector<std::string> args = parseInput(input);
+    if (args.empty())
+    {
+        return 1;
+    }
+
+    auto it = command_map.find(args[0]);
+    if (it != command_map.end())
+    {
+        return it->second(args);
+    }
+    else
+    {
+        std::cerr << "未知命令: " << args[0] << std::endl;
+        return 1;
+    }
 }
 
 // dir 命令
@@ -139,45 +180,4 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
 int CommandLine::cmdExit(const std::vector<std::string> &args)
 {
     return 0;
-}
-
-// 构造函数
-CommandLine::CommandLine()
-{
-    command_map["exit"] = [this](const std::vector<std::string> &args)
-    { return cmdExit(args); };
-    command_map["dir"] = [this](const std::vector<std::string> &args)
-    { return cmdDir(args); };
-    command_map["mkdir"] = [this](const std::vector<std::string> &args)
-    { return cmdMkdir(args); };
-    command_map["cd"] = [this](const std::vector<std::string> &args)
-    { return cmdCd(args); };
-    command_map["mkfile"] = [this](const std::vector<std::string> &args)
-    { return cmdMkfile(args); };
-    command_map["del"] = [this](const std::vector<std::string> &args)
-    { return cmdDel(args); };
-    command_map["write"] = [this](const std::vector<std::string> &args)
-    { return cmdWrite(args); };
-    command_map["read"] = [this](const std::vector<std::string> &args)
-    { return cmdRead(args); };
-}
-
-int CommandLine::execute(const std::string &input)
-{
-    std::vector<std::string> args = parseInput(input);
-    if (args.empty())
-    {
-        return 1;
-    }
-
-    auto it = command_map.find(args[0]);
-    if (it != command_map.end())
-    {
-        return it->second(args);
-    }
-    else
-    {
-        std::cerr << "未知命令: " << args[0] << std::endl;
-        return 1;
-    }
 }

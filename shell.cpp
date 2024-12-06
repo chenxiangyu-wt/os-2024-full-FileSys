@@ -1,5 +1,8 @@
 #include "filesys.h"
 #include <unordered_map>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #define CLEN 10
 #define CNUM 10
 // enum ctype

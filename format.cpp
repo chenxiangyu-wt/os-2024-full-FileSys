@@ -4,11 +4,10 @@
 
 void format()
 {
-	struct INode *inode;
-	struct Direct dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
-	struct Pwd passwd[32];
+	INode *inode;
+	Direct dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
+	Pwd passwd[32];
 	unsigned int block_buf[BLOCKSIZ / sizeof(int)];
-	int i, j;
 
 	// 初始化硬盘
 	memset(disk, 0x00, ((DINODEBLK + FILEBLK + 2) * BLOCKSIZ));
@@ -79,7 +78,7 @@ void format()
 	inode->di_size = BLOCKSIZ;
 	inode->di_addr[0] = 2; /*block 2# is used by the password file*/
 
-	for (i = 5; i < PWDNUM; i++)
+	for (int i = 5; i < PWDNUM; i++)
 	{
 		passwd[i].p_uid = 0;
 		passwd[i].p_gid = 0;
@@ -98,7 +97,7 @@ void format()
 	FileSystem.s_ninode = DINODEBLK * BLOCKSIZ / DINODESIZ - 4;
 	FileSystem.s_nfree = FILEBLK - 3;
 
-	for (i = 0; i < NICINOD; i++)
+	for (int i = 0; i < NICINOD; i++)
 	{
 		/* begin with 4,    0,1,2,3, is used by main,etc,password */
 		FileSystem.s_inode[i] = 4 + i;
@@ -108,10 +107,13 @@ void format()
 	FileSystem.s_rinode = NICINOD + 4;
 
 	block_buf[NICFREE - 1] = FILEBLK + 1; /*FILEBLK+1 is a flag of end*/
-	for (i = 0; i < NICFREE - 1; i++)
+	for (int i = 0; i < NICFREE - 1; i++)
+	{
 		block_buf[NICFREE - 2 - i] = FILEBLK - i - 1; // 从最后一个数据块开始分配??????
+	}
 
 	memcpy(disk + DATASTART + BLOCKSIZ * (FILEBLK - NICFREE), block_buf, BLOCKSIZ);
+	int i, j;
 	for (i = FILEBLK - 2 * NICFREE + 1; i > 2; i -= NICFREE)
 	{
 		for (j = 0; j < NICFREE; j++)

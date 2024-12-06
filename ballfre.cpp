@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cstring>
 #include "filesys.h"
 
 static unsigned int block_buf[BLOCKSIZ];

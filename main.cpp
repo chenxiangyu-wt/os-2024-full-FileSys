@@ -3,7 +3,6 @@
 #include "CommandLine.hpp"
 
 struct Hinode hinode[NHINO];
-
 struct Dir Dir;
 struct File sys_ofile[SYSOPENFILE];
 struct FileSystem FileSystem;
