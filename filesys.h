@@ -92,26 +92,33 @@ struct Dinode
 	unsigned int di_addr[NADDR]; /*物理块号*/
 };
 
-struct Direct
+// 目录项
+struct DirectoryEntry
 {
-	char d_name[DIRSIZ];
-	unsigned int d_ino;
+	char name[DIRSIZ];		   // 文件或目录名称
+	unsigned int inode_number; // i 节点编号
 };
 
+// 目录
+struct Directory
+{
+	struct DirectoryEntry entries[DIRNUM]; // 目录项数组
+	unsigned int entry_count;			   // 当前目录中的有效项数
+};
 struct FileSystem
 {
-	unsigned short s_isize;		  /* i 节点块块数 */
-	unsigned long s_fsize;		  /* 数据块块数 */
-	unsigned int s_nfree;		  /* 空闲块数 */
-	unsigned short s_pfree;		  /* 空闲块指针 */
-	unsigned int s_free[NICFREE]; /* 空闲块堆栈 */
+	unsigned short inode_block_count;  /* i 节点块块数 */
+	unsigned long data_block_count;	   /* 数据块块数 */
+	unsigned int free_block_count;	   /* 空闲块数 */
+	unsigned short free_block_pointer; /* 空闲块指针 */
+	unsigned int free_blocks[NICFREE]; /* 空闲块堆栈 */
 
-	unsigned int s_ninode;		   /* 空闲 i 节点数 */
-	unsigned short s_pinode;	   /* 空闲 i 节点指针 */
-	unsigned int s_inode[NICINOD]; /* 空闲 i 节点数组 */
-	unsigned int s_rinode;		   /* 记录的 i 节点 */
+	unsigned int free_inode_count;	   /* 空闲 i 节点数 */
+	unsigned short free_inode_pointer; /* 空闲 i 节点指针 */
+	unsigned int free_inodes[NICINOD]; /* 空闲 i 节点数组 */
+	unsigned int last_allocated_inode; /* 记录的 i 节点 */
 
-	char s_fmod; /* 超级块修改标志 */
+	char superblock_modified_flag; /* 超级块修改标志 */
 };
 
 struct Pwd
@@ -119,12 +126,6 @@ struct Pwd
 	unsigned short p_uid;
 	unsigned short p_gid;
 	char password[PWDSIZ];
-};
-
-struct Dir
-{
-	struct Direct direct[DIRNUM];
-	unsigned int size; /* 当前目录大小 */
 };
 
 struct Hinode
@@ -150,9 +151,9 @@ struct User
 
 // all variables
 extern struct Hinode hinode[NHINO];
-extern struct Dir Dir; /*当前目录(在内存中全部读入)*/
+extern struct Directory dir; /*当前目录(在内存中全部读入)*/
 extern struct File sys_ofile[SYSOPENFILE];
-extern struct FileSystem FileSystem; /*内存中的超级块*/
+extern struct FileSystem fileSystem; /*内存中的超级块*/
 extern struct Pwd pwd[PWDNUM];
 extern struct User user[USERNUM];
 // extern struct file     *fd;           /*the file system column of all the system*/    //xiao

@@ -14,12 +14,12 @@ struct INode *ialloc()
 	int i, count, block_end_flag;
 
 	// I界点分配时从低位到高位使用，并且分配的i节点也是由低到高
-	if (FileSystem.s_pinode == NICINOD)
+	if (fileSystem.free_inode_pointer == NICINOD)
 	{
 		i = 0;
 		block_end_flag = 1;
-		count = FileSystem.s_pinode = FileSystem.s_ninode > NICINOD ? 0 : (NICINOD - FileSystem.s_ninode);
-		cur_di = FileSystem.s_rinode;
+		count = fileSystem.free_inode_pointer = fileSystem.free_inode_count > NICINOD ? 0 : (NICINOD - fileSystem.free_inode_count);
+		cur_di = fileSystem.last_allocated_inode;
 		while (count < NICINOD)
 		{ // 空闲i节点数组没有装满且磁盘中还有空闲i节点
 			if (block_end_flag)
@@ -38,35 +38,35 @@ struct INode *ialloc()
 				block_end_flag = 1;
 				continue;
 			}
-			FileSystem.s_inode[count++] = cur_di;
+			fileSystem.free_inodes[count++] = cur_di;
 		}
-		FileSystem.s_rinode = cur_di; // 重新设铭记i节点
+		fileSystem.last_allocated_inode = cur_di; // 重新设铭记i节点
 	}
 	/*分配空闲i节点*/
-	temp_inode = iget(FileSystem.s_inode[FileSystem.s_pinode]);
-	memcpy(disk + DINODESTART + FileSystem.s_inode[FileSystem.s_pinode] * DINODESIZ,
+	temp_inode = iget(fileSystem.free_inodes[fileSystem.free_inode_pointer]);
+	memcpy(disk + DINODESTART + fileSystem.free_inodes[fileSystem.free_inode_pointer] * DINODESIZ,
 		   &temp_inode->di_number, sizeof(struct Dinode));
-	FileSystem.s_pinode++;
-	FileSystem.s_ninode--;
-	FileSystem.s_fmod = SUPDATE;
+	fileSystem.free_inode_pointer++;
+	fileSystem.free_inode_count--;
+	fileSystem.superblock_modified_flag = SUPDATE;
 	return temp_inode;
 }
 
 void ifree(unsigned int dinodeid)
 {
-	FileSystem.s_ninode--; // 空闲i节点数减一
-	if (FileSystem.s_pinode != 0)
+	fileSystem.free_inode_count--; // 空闲i节点数减一
+	if (fileSystem.free_inode_pointer != 0)
 	{ // 空闲i节点数组未满
-		FileSystem.s_pinode--;
-		FileSystem.s_inode[FileSystem.s_pinode] = dinodeid;
+		fileSystem.free_inode_pointer--;
+		fileSystem.free_inodes[fileSystem.free_inode_pointer] = dinodeid;
 	}
 	else
 	{
-		if (dinodeid < FileSystem.s_rinode)
+		if (dinodeid < fileSystem.last_allocated_inode)
 		{
 			// 新释放i节点号小于铭记i节点号，则丢弃原铭记i节点，设新的铭记i节点为新释放的铭记i节点
-			FileSystem.s_inode[NICINOD] = dinodeid;
-			FileSystem.s_rinode = dinodeid;
+			fileSystem.free_inodes[NICINOD] = dinodeid;
+			fileSystem.last_allocated_inode = dinodeid;
 		}
 	}
 	return;

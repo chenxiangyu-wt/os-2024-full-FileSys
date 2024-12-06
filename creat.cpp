@@ -13,7 +13,7 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 	dirid = namei(filename);
 	if (dirid != -1)
 	{ // 如果存在同名文件/目录
-		inode = iget(Dir.direct[dirid].d_ino);
+		inode = iget(dir.entries[dirid].inode_number);
 		if (!(inode->di_mode & DIFILE))
 		{ // 如果不是文件
 			printf("存在同名目录！\n");
@@ -43,8 +43,8 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 		inode = ialloc();
 		di_ith = iname(filename);
 
-		Dir.size++;
-		Dir.direct[di_ith].d_ino = inode->i_ino;
+		dir.entry_count++;
+		dir.entries[di_ith].inode_number = inode->i_ino;
 		inode->di_mode = mode;
 		inode->di_uid = user[user_id].u_uid;
 		inode->di_gid = user[user_id].u_gid;

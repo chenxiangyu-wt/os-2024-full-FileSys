@@ -5,7 +5,7 @@
 void format()
 {
 	INode *inode;
-	Direct dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
+	DirectoryEntry dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
 	Pwd passwd[32];
 	unsigned int block_buf[BLOCKSIZ / sizeof(int)];
 
@@ -46,12 +46,12 @@ void format()
 	inode->di_size = 3 * (DIRSIZ + 4);
 	inode->di_addr[0] = 0; /*block 0# is used by the main directory*/
 
-	strcpy(dir_buf[0].d_name, "..");
-	dir_buf[0].d_ino = 1;
-	strcpy(dir_buf[1].d_name, ".");
-	dir_buf[1].d_ino = 1;
-	strcpy(dir_buf[2].d_name, "etc");
-	dir_buf[2].d_ino = 2;
+	strcpy(dir_buf[0].name, "..");
+	dir_buf[0].inode_number = 1;
+	strcpy(dir_buf[1].name, ".");
+	dir_buf[1].inode_number = 1;
+	strcpy(dir_buf[2].name, "etc");
+	dir_buf[2].inode_number = 2;
 
 	memcpy(disk + DATASTART, &dir_buf, 3 * (DIRSIZ + 4));
 	iput(inode);
@@ -62,12 +62,12 @@ void format()
 	inode->di_size = 3 * (DIRSIZ + 4);
 	inode->di_addr[0] = 1; /*block 1# is used by the etc directory*/
 
-	strcpy(dir_buf[0].d_name, "..");
-	dir_buf[0].d_ino = 1;
-	strcpy(dir_buf[1].d_name, ".");
-	dir_buf[1].d_ino = 2;
-	strcpy(dir_buf[2].d_name, "password");
-	dir_buf[2].d_ino = 3;
+	strcpy(dir_buf[0].name, "..");
+	dir_buf[0].inode_number = 1;
+	strcpy(dir_buf[1].name, ".");
+	dir_buf[1].inode_number = 2;
+	strcpy(dir_buf[2].name, "password");
+	dir_buf[2].inode_number = 3;
 
 	memcpy(disk + DATASTART + BLOCKSIZ * 1, dir_buf, 3 * (DIRSIZ + 4));
 	iput(inode);
@@ -91,20 +91,20 @@ void format()
 
 	/*2. initialize the superblock */
 
-	FileSystem.s_isize = DINODEBLK;
-	FileSystem.s_fsize = FILEBLK;
+	fileSystem.inode_block_count = DINODEBLK;
+	fileSystem.data_block_count = FILEBLK;
 
-	FileSystem.s_ninode = DINODEBLK * BLOCKSIZ / DINODESIZ - 4;
-	FileSystem.s_nfree = FILEBLK - 3;
+	fileSystem.free_inode_count = DINODEBLK * BLOCKSIZ / DINODESIZ - 4;
+	fileSystem.free_block_count = FILEBLK - 3;
 
 	for (int i = 0; i < NICINOD; i++)
 	{
 		/* begin with 4,    0,1,2,3, is used by main,etc,password */
-		FileSystem.s_inode[i] = 4 + i;
+		fileSystem.free_inodes[i] = 4 + i;
 	}
 
-	FileSystem.s_pinode = 0;
-	FileSystem.s_rinode = NICINOD + 4;
+	fileSystem.free_inode_pointer = 0;
+	fileSystem.last_allocated_inode = NICINOD + 4;
 
 	block_buf[NICFREE - 1] = FILEBLK + 1; /*FILEBLK+1 is a flag of end*/
 	for (int i = 0; i < NICFREE - 1; i++)
@@ -126,11 +126,11 @@ void format()
 	j = 1;
 	for (; i > 3; i--)
 	{
-		FileSystem.s_free[NICFREE - j] = i - 1;
+		fileSystem.free_blocks[NICFREE - j] = i - 1;
 		j++;
 	}
 
-	FileSystem.s_pfree = NICFREE - j + 1;
-	memcpy(disk + BLOCKSIZ, &FileSystem, sizeof(struct FileSystem));
+	fileSystem.free_block_pointer = NICFREE - j + 1;
+	memcpy(disk + BLOCKSIZ, &fileSystem, sizeof(FileSystem));
 	return;
 }

@@ -61,7 +61,7 @@ unsigned int write(int fd, char *buf, unsigned int size)
 	block = ((off + size) - inode->di_size) / BLOCKSIZ; // ÉÐÐè¸öÊý
 	if (((off + size) - inode->di_size) % BLOCKSIZ)
 		block++;
-	if (FileSystem.s_nfree < block)
+	if (fileSystem.free_block_count < block)
 	{
 		printf("Not enough space to write so much bytes!\n");
 		return 0;

@@ -13,26 +13,26 @@ unsigned int balloc()
 	int i;
 
 	// 如果没有空闲盘块
-	if (FileSystem.s_nfree == 0)
+	if (fileSystem.free_block_count == 0)
 	{
 		printf("\nDisk Full!!!\n");
 		return DISKFULL;
 	}
-	free_block = FileSystem.s_free[FileSystem.s_pfree]; // 取堆栈中的盘块号
-	if (FileSystem.s_pfree == NICFREE - 1)
+	free_block = fileSystem.free_blocks[fileSystem.free_block_pointer]; // 取堆栈中的盘块号
+	if (fileSystem.free_block_pointer == NICFREE - 1)
 	{ // 如果堆栈只剩一个块
 		memcpy(block_buf, disk + DATASTART + (free_block)*BLOCKSIZ, BLOCKSIZ);
 		// 从中读取下一组块号
 		for (i = 0; i < NICFREE; i++)
-			FileSystem.s_free[i] = block_buf[i];
-		FileSystem.s_pfree = 0; // 设置堆栈指针
+			fileSystem.free_blocks[i] = block_buf[i];
+		fileSystem.free_block_pointer = 0; // 设置堆栈指针
 	}
 	else
-	{						  // 如果堆栈中大于一个盘块
-		FileSystem.s_pfree++; // 修改堆栈指针
+	{									 // 如果堆栈中大于一个盘块
+		fileSystem.free_block_pointer++; // 修改堆栈指针
 	}
-	FileSystem.s_nfree--; // 修改总块数
-	FileSystem.s_fmod = SUPDATE;
+	fileSystem.free_block_count--; // 修改总块数
+	fileSystem.superblock_modified_flag = SUPDATE;
 	return free_block;
 }
 
@@ -40,18 +40,18 @@ void bfree(unsigned int block_num)
 {
 	int i;
 
-	if (FileSystem.s_pfree == 0)
+	if (fileSystem.free_block_pointer == 0)
 	{ // 如果堆栈已满
 		/*将当前堆栈内块号写入当前块号*/
 		for (i = 0; i < NICFREE; i++)
-			block_buf[i] = FileSystem.s_free[NICFREE - 1 - i];
+			block_buf[i] = fileSystem.free_blocks[NICFREE - 1 - i];
 		memcpy(disk + DATASTART + block_num * BLOCKSIZ, block_buf, BLOCKSIZ);
-		FileSystem.s_pfree = NICFREE; // 清空堆栈
+		fileSystem.free_block_pointer = NICFREE; // 清空堆栈
 	}
 	/*修改堆栈指针，并将当前块号压入堆栈*/
-	FileSystem.s_pfree--;
-	FileSystem.s_nfree++;
-	FileSystem.s_free[FileSystem.s_pfree] = block_num;
-	FileSystem.s_fmod = SUPDATE;
+	fileSystem.free_block_pointer--;
+	fileSystem.free_block_count++;
+	fileSystem.free_blocks[fileSystem.free_block_pointer] = block_num;
+	fileSystem.superblock_modified_flag = SUPDATE;
 	return;
 }

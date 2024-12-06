@@ -11,7 +11,7 @@ int namei(const char *name)
 
 	for (i = 0; i < DIRNUM; i++)
 	{
-		if ((!strcmp(Dir.direct[i].d_name, name)) && (Dir.direct[i].d_ino != 0)) // 名字匹配且目录项有效；
+		if ((!strcmp(dir.entries[i].name, name)) && (dir.entries[i].inode_number != 0)) // 名字匹配且目录项有效；
 		{
 			return i; // liwen change it ,userful in delete
 		}
@@ -29,7 +29,7 @@ unsigned short iname(const char *name)
 
 	for (i = 0; ((i < DIRNUM) && (notfound)); i++)
 	{
-		if (Dir.direct[i].d_ino == 0) // 该目录项未分配。
+		if (dir.entries[i].inode_number == 0) // 该目录项未分配。
 		{
 			notfound = 0;
 			break;
@@ -41,6 +41,6 @@ unsigned short iname(const char *name)
 		printf("\nThe current directory is full!!!\n");
 		return 0;
 	}
-	strcpy(Dir.direct[i].d_name, name);
+	strcpy(dir.entries[i].name, name);
 	return i;
 }
