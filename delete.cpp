@@ -4,7 +4,7 @@
 void removeFile(const char *filename)
 {
 	int dirid;
-	struct INode *inode;
+	struct MemoryINode *inode;
 
 	dirid = namei(filename);
 	if (dirid == -1)
@@ -21,7 +21,7 @@ void removeFile(const char *filename)
 	}
 	dir.entries[dirid].inode_number = DIEMPTY;
 	dir.entry_count--;
-	inode->link_count--;
+	inode->reference_count--;
 	iput(inode);
 	return;
 }

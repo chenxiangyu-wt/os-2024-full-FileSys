@@ -4,8 +4,8 @@
 short open(int user_id, const char *filename, char openmode)
 {
 	unsigned int dinodeid;
-	struct INode *inode;
-	int i, j, k;
+	struct MemoryINode *inode;
+	uint32_t i, j, k;
 
 	dinodeid = namei(filename);
 	if (dinodeid == 0)

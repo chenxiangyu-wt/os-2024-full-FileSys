@@ -7,7 +7,7 @@
 *******************************************************/
 void close(unsigned int user_id, unsigned short cfd)
 {
-	struct INode *inode;
+	struct MemoryINode *inode;
 	inode = sys_ofile[user[user_id].open_files[cfd]].inode;
 	iput(inode);
 	sys_ofile[user[user_id].open_files[cfd]].reference_count--;

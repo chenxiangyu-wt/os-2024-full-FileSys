@@ -8,7 +8,7 @@ File sys_ofile[SYSOPENFILE];
 FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
-INode *cur_path_inode;
+MemoryINode *cur_path_inode;
 int user_id;
 char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
 char str[100];

@@ -4,7 +4,7 @@
 
 void format()
 {
-	INode *inode;
+	MemoryINode *inode;
 	DirectoryEntry dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
 	UserPassword passwd[32];
 	unsigned int block_buf[BLOCKSIZ / sizeof(int)];
@@ -35,13 +35,13 @@ void format()
 
 	/* 1.creat the main directory and its sub dir etc and the file password */
 
-	inode = iget(0);	   /* 0 empty dinode id*/
-	inode->link_count = 1; //??空i节点有何用????
+	inode = iget(0);			/* 0 empty dinode id*/
+	inode->reference_count = 1; //??空i节点有何用????
 	inode->mode = DIEMPTY;
 	iput(inode);
 
 	inode = iget(1); /* 1 main dir id*/
-	inode->link_count = 1;
+	inode->reference_count = 1;
 	inode->mode = DEFAULTMODE | DIDIR;
 	inode->file_size = 3 * (DIRSIZ + 4);
 	inode->block_addresses[0] = 0; /*block 0# is used by the main directory*/
@@ -57,7 +57,7 @@ void format()
 	iput(inode);
 
 	inode = iget(2); /* 2  etc dir id */
-	inode->link_count = 1;
+	inode->reference_count = 1;
 	inode->mode = DEFAULTMODE | DIDIR;
 	inode->file_size = 3 * (DIRSIZ + 4);
 	inode->block_addresses[0] = 1; /*block 1# is used by the etc directory*/
@@ -73,7 +73,7 @@ void format()
 	iput(inode);
 
 	inode = iget(3); /* 3  password id */
-	inode->link_count = 1;
+	inode->reference_count = 1;
 	inode->mode = DEFAULTMODE | DIFILE;
 	inode->file_size = BLOCKSIZ;
 	inode->block_addresses[0] = 2; /*block 2# is used by the password file*/

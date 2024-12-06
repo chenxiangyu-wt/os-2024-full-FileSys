@@ -4,9 +4,9 @@
 
 void _dir()
 {
-	unsigned int di_mode;
-	int i, j, k; // xiao
-	struct INode *temp_inode;
+	unsigned int mode;
+	uint32_t i, j, k; // xiao
+	struct MemoryINode *temp_inode;
 
 	printf("\n CURRENT DIRECTORY :%s\n", dir.entries[0].name);
 	printf("当前共有%d个文件/目录\n", dir.entry_count);
@@ -16,10 +16,10 @@ void _dir()
 		{
 			printf("%-14s", dir.entries[i].name);
 			temp_inode = iget(dir.entries[i].inode_number);
-			di_mode = temp_inode->mode & 00777;
+			mode = temp_inode->mode & 00777;
 			for (j = 0; j < 9; j++)
 			{
-				if (di_mode % 2)
+				if (mode % 2)
 				{
 					printf("x");
 				}
@@ -27,7 +27,7 @@ void _dir()
 				{
 					printf("-");
 				}
-				di_mode = di_mode / 2;
+				mode = mode / 2;
 			}
 			printf("\ti_ino->%d\t", temp_inode->status_flag);
 			if (temp_inode->mode & DIFILE)
@@ -51,7 +51,7 @@ void _dir()
 void mkdir(const char *dirname)
 {
 	int dirid, dirpos;
-	INode *inode;
+	MemoryINode *inode;
 	DirectoryEntry buf[BLOCKSIZ / (DIRSIZ + 4)];
 	unsigned int block;
 
@@ -80,10 +80,10 @@ void mkdir(const char *dirname)
 	memcpy(disk + DATASTART + block * BLOCKSIZ, buf, BLOCKSIZ);
 
 	inode->file_size = 2 * (DIRSIZ + 4);
-	inode->link_count = 1;
+	inode->reference_count = 1;
 	inode->mode = user[user_id].default_mode | DIDIR;
-	inode->owner_user_id = user[user_id].user_id;
-	inode->owner_group_id = user[user_id].group_id;
+	inode->owner_uid = user[user_id].user_id;
+	inode->owner_gid = user[user_id].group_id;
 	inode->block_addresses[0] = block;
 
 	iput(inode);
@@ -93,7 +93,7 @@ void mkdir(const char *dirname)
 void chdir(const char *dirname)
 {
 	int dirid;
-	struct INode *inode;
+	struct MemoryINode *inode;
 	unsigned short block;
 	int j, low = 0, high = 0;
 

@@ -6,9 +6,9 @@
 **********************************************************************/
 int creat(unsigned int user_id, const char *filename, unsigned short mode)
 {
-	struct INode *inode;
+	struct MemoryINode *inode;
 	int dirid, di_ith;
-	int i, j;
+	uint32_t i, j;
 
 	dirid = namei(filename);
 	if (dirid != -1)
@@ -46,10 +46,10 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 		dir.entry_count++;
 		dir.entries[di_ith].inode_number = inode->status_flag;
 		inode->mode = mode;
-		inode->owner_user_id = user[user_id].user_id;
-		inode->owner_group_id = user[user_id].group_id;
+		inode->owner_uid = user[user_id].user_id;
+		inode->owner_gid = user[user_id].group_id;
 		inode->file_size = 0;
-		inode->link_count = 1; // liwen change to 1
+		inode->reference_count = 1; // liwen change to 1
 		iput(inode);
 		return open(user_id, filename, WRITE);
 	}

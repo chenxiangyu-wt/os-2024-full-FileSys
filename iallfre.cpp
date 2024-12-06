@@ -2,14 +2,14 @@
 #include <string.h>
 #include "filesys.h"
 
-static struct Dinode block_buf[BLOCKSIZ / DINODESIZ]; // 存放i节点的临时数组
+static struct DiskINode block_buf[BLOCKSIZ / DINODESIZ]; // 存放i节点的临时数组
 /*****************************************************
 函数：ialloc
 功能：分配磁盘i节点，返回相应的内存i节点指针
 ******************************************************/
-struct INode *ialloc()
+struct MemoryINode *ialloc()
 {
-	struct INode *temp_inode;
+	struct MemoryINode *temp_inode;
 	unsigned int cur_di;
 	int i, count, block_end_flag;
 
@@ -28,7 +28,7 @@ struct INode *ialloc()
 				block_end_flag = 0;
 				i = 0;
 			}
-			while (block_buf[IUPDATE].di_mode != DIEMPTY)
+			while (block_buf[IUPDATE].mode != DIEMPTY)
 			{ // 临时数组为空，则读到空闲i节点数组中
 				cur_di++;
 				i++;
@@ -45,7 +45,7 @@ struct INode *ialloc()
 	/*分配空闲i节点*/
 	temp_inode = iget(fileSystem.free_inodes[fileSystem.free_inode_pointer]);
 	memcpy(disk + DINODESTART + fileSystem.free_inodes[fileSystem.free_inode_pointer] * DINODESIZ,
-		   &temp_inode->link_count, sizeof(struct Dinode));
+		   &temp_inode->reference_count, sizeof(struct DiskINode));
 	fileSystem.free_inode_pointer++;
 	fileSystem.free_inode_count--;
 	fileSystem.superblock_modified_flag = SUPDATE;

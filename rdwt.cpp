@@ -6,7 +6,7 @@ unsigned int read(int fd, char *buf, unsigned int size)
 {
 	unsigned long off;
 	unsigned int block, block_off, i, j;
-	struct INode *inode;
+	struct MemoryINode *inode;
 	char *temp_buf;
 
 	inode = sys_ofile[user[user_id].open_files[fd]].inode;
@@ -47,7 +47,7 @@ unsigned int write(int fd, char *buf, unsigned int size)
 {
 	unsigned long off;
 	unsigned int block, block_off, i, j;
-	struct INode *inode;
+	struct MemoryINode *inode;
 	char *temp_buf;
 
 	inode = sys_ofile[user[user_id].open_files[fd]].inode;
