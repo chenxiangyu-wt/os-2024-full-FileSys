@@ -8,9 +8,9 @@
 void close(unsigned int user_id, unsigned short cfd)
 {
 	struct INode *inode;
-	inode = sys_ofile[user[user_id].u_ofile[cfd]].f_inode;
+	inode = sys_ofile[user[user_id].open_files[cfd]].inode;
 	iput(inode);
-	sys_ofile[user[user_id].u_ofile[cfd]].f_count--;
-	user[user_id].u_ofile[cfd] = SYSOPENFILE + 1;
+	sys_ofile[user[user_id].open_files[cfd]].reference_count--;
+	user[user_id].open_files[cfd] = SYSOPENFILE + 1;
 	return;
 }

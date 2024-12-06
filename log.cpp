@@ -7,7 +7,7 @@ int find_user_index(unsigned short uid, const char *passwd)
 {
 	for (int i = 0; i < PWDNUM; i++)
 	{
-		if (uid == pwd[i].p_uid && strcmp(passwd, pwd[i].password) == 0)
+		if (uid == pwd[i].user_id && strcmp(passwd, pwd[i].password) == 0)
 		{
 			return i; // 找到匹配的用户
 		}
@@ -18,7 +18,7 @@ int find_free_user_slot()
 {
 	for (int j = 0; j < USERNUM; j++)
 	{
-		if (user[j].u_uid == 0)
+		if (user[j].user_id == 0)
 		{
 			return j; // 找到空闲位置
 		}
@@ -43,9 +43,9 @@ int login(unsigned short uid, const char *passwd)
 	}
 
 	// 将用户信息写入空闲位置
-	user[free_slot].u_uid = uid;
-	user[free_slot].u_gid = pwd[user_index].p_gid;
-	user[free_slot].u_default_mode = DEFAULTMODE;
+	user[free_slot].user_id = uid;
+	user[free_slot].group_id = pwd[user_index].group_id;
+	user[free_slot].default_mode = DEFAULTMODE;
 
 	return LOGIN_SUCCESS;
 }
@@ -94,7 +94,7 @@ int logout(unsigned short uid)
 
 	for (i = 0; i < USERNUM; i++)
 	{
-		if (uid == user[i].u_uid)
+		if (uid == user[i].user_id)
 			break;
 	}
 
@@ -106,14 +106,14 @@ int logout(unsigned short uid)
 
 	for (j = 0; j < NOFILE; j++)
 	{
-		if (user[i].u_ofile[j] != SYSOPENFILE + 1)
+		if (user[i].open_files[j] != SYSOPENFILE + 1)
 		{
 			/* iput the inode free the sys_ofile and clear the user_ofile */
-			sys_no = user[i].u_ofile[j];
-			inode = sys_ofile[sys_no].f_inode;
+			sys_no = user[i].open_files[j];
+			inode = sys_ofile[sys_no].inode;
 			iput(inode);
-			sys_ofile[sys_no].f_count--;
-			user[i].u_ofile[j] = SYSOPENFILE + 1;
+			sys_ofile[sys_no].reference_count--;
+			user[i].open_files[j] = SYSOPENFILE + 1;
 		}
 	}
 	return 1;

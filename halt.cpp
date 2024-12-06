@@ -14,14 +14,14 @@ void halt()
 	/*2. free the u_ofile and sys_ofile and inode*/
 	for (i = 0; i < USERNUM; i++)
 	{
-		if (user[i].u_uid != 0)
+		if (user[i].user_id != 0)
 		{
 			for (j = 0; j < NOFILE; j++)
 			{
-				if (user[i].u_ofile[j] != SYSOPENFILE + 1)
+				if (user[i].open_files[j] != SYSOPENFILE + 1)
 				{
 					close(i, j);
-					user[i].u_ofile[j] = SYSOPENFILE + 1;
+					user[i].open_files[j] = SYSOPENFILE + 1;
 				} // if
 			} // for
 		} // if

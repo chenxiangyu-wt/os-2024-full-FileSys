@@ -14,7 +14,7 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 	if (dirid != -1)
 	{ // 如果存在同名文件/目录
 		inode = iget(dir.entries[dirid].inode_number);
-		if (!(inode->di_mode & DIFILE))
+		if (!(inode->mode & DIFILE))
 		{ // 如果不是文件
 			printf("存在同名目录！\n");
 		}
@@ -24,15 +24,15 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 			printf("\n creat access not allowed \n");
 			return -1;
 		}
-		j = inode->di_size % 512 ? 1 : 0;
-		for (i = 0; i < inode->di_size / BLOCKSIZ + j; i++)
-			bfree(inode->di_addr[i]);
+		j = inode->file_size % 512 ? 1 : 0;
+		for (i = 0; i < inode->file_size / BLOCKSIZ + j; i++)
+			bfree(inode->block_addresses[i]);
 
 		for (i = 0; i < SYSOPENFILE; i++)
 		{
-			if (sys_ofile[i].f_count != 0 && sys_ofile[i].f_inode == inode)
+			if (sys_ofile[i].reference_count != 0 && sys_ofile[i].inode == inode)
 			{
-				sys_ofile[i].f_off = 0;
+				sys_ofile[i].offset = 0;
 			}
 		}
 		iput(inode);
@@ -44,12 +44,12 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 		di_ith = iname(filename);
 
 		dir.entry_count++;
-		dir.entries[di_ith].inode_number = inode->i_ino;
-		inode->di_mode = mode;
-		inode->di_uid = user[user_id].u_uid;
-		inode->di_gid = user[user_id].u_gid;
-		inode->di_size = 0;
-		inode->di_number = 1; // liwen change to 1
+		dir.entries[di_ith].inode_number = inode->status_flag;
+		inode->mode = mode;
+		inode->owner_user_id = user[user_id].user_id;
+		inode->owner_group_id = user[user_id].group_id;
+		inode->file_size = 0;
+		inode->link_count = 1; // liwen change to 1
 		iput(inode);
 		return open(user_id, filename, WRITE);
 	}

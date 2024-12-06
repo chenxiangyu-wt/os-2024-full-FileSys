@@ -13,7 +13,7 @@ void removeFile(const char *filename)
 		return;
 	}
 	inode = iget(dir.entries[dirid].inode_number);
-	if (!(inode->di_mode & DIFILE))
+	if (!(inode->mode & DIFILE))
 	{
 		printf("对象不是文件，请检查！\n");
 		iput(inode);
@@ -21,7 +21,7 @@ void removeFile(const char *filename)
 	}
 	dir.entries[dirid].inode_number = DIEMPTY;
 	dir.entry_count--;
-	inode->di_number--;
+	inode->link_count--;
 	iput(inode);
 	return;
 }

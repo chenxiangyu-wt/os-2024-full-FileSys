@@ -10,27 +10,27 @@ unsigned int access(unsigned int user_id, struct INode *inode, unsigned short mo
 	switch (mode)
 	{
 	case READ:
-		if (inode->di_mode & ODIREAD) // 文件是所有用户可读行通过；
+		if (inode->mode & ODIREAD) // 文件是所有用户可读行通过；
 			return 1;
-		if ((inode->di_mode & GDIREAD) && (user[user_id].u_gid == inode->di_gid)) // 文件本组可读，用户组和文件组一致通过；
+		if ((inode->mode & GDIREAD) && (user[user_id].group_id == inode->owner_group_id)) // 文件本组可读，用户组和文件组一致通过；
 			return 1;
-		if ((inode->di_mode & UDIREAD) && (user[user_id].u_uid == inode->di_uid)) // 文件指定用户可读，是该用户通过；
+		if ((inode->mode & UDIREAD) && (user[user_id].user_id == inode->owner_user_id)) // 文件指定用户可读，是该用户通过；
 			return 1;
 		return 0; // 其他不通过；
 	case WRITE:
-		if (inode->di_mode & ODIWRITE)
+		if (inode->mode & ODIWRITE)
 			return 1;
-		if ((inode->di_mode & GDIWRITE) && (user[user_id].u_gid == inode->di_gid))
+		if ((inode->mode & GDIWRITE) && (user[user_id].group_id == inode->owner_group_id))
 			return 1;
-		if ((inode->di_mode & UDIWRITE) && (user[user_id].u_uid == inode->di_uid))
+		if ((inode->mode & UDIWRITE) && (user[user_id].user_id == inode->owner_user_id))
 			return 1;
 		return 0;
 	case EXICUTE:
-		if (inode->di_mode & ODIEXICUTE)
+		if (inode->mode & ODIEXICUTE)
 			return 1;
-		if ((inode->di_mode & GDIEXICUTE) && (user[user_id].u_gid == inode->di_gid))
+		if ((inode->mode & GDIEXICUTE) && (user[user_id].group_id == inode->owner_group_id))
 			return 1;
-		if ((inode->di_mode & UDIEXICUTE) && (user[user_id].u_uid == inode->di_uid))
+		if ((inode->mode & UDIEXICUTE) && (user[user_id].user_id == inode->owner_user_id))
 			return 1;
 		return 0;
 	} // swith

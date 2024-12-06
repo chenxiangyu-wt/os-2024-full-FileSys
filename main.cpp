@@ -2,12 +2,12 @@
 #include "filesys.h"
 #include "CommandLine.hpp"
 
-Hinode hinode[NHINO];
-struct Directory dir;
+InodeHashTableEntry hinode[NHINO];
+Directory dir;
 File sys_ofile[SYSOPENFILE];
 FileSystem fileSystem;
-Pwd pwd[PWDNUM];
-User user[USERNUM];
+UserPassword pwd[PWDNUM];
+UserContext user[USERNUM];
 INode *cur_path_inode;
 int user_id;
 char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];

@@ -69,17 +69,17 @@ constexpr int FAPPEND = 00004;
 
 struct INode
 {
-	struct INode *i_forw;
-	struct INode *i_back;
-	char i_flag;
-	unsigned int i_ino;		  /*磁盘i 节点标志*/
-	unsigned int i_count;	  /*引用计数*/
-	unsigned short di_number; /*关联文件数。当为0 时，则删除该文件*/
-	unsigned short di_mode;	  /*存取权限*/
-	unsigned short di_uid;
-	unsigned short di_gid;
-	unsigned short di_size;		 /*文件大小*/
-	unsigned int di_addr[NADDR]; /*物理块号*/
+	struct INode *next;					 // 指向下一个 i 节点（用于链表）
+	struct INode *prev;					 // 指向前一个 i 节点（用于链表）
+	char status_flag;					 // i 节点状态标志
+	unsigned int inode_number;			 // i 节点编号
+	unsigned int reference_count;		 // 引用计数
+	unsigned short link_count;			 // 链接数
+	unsigned short mode;				 // 存取权限和文件类型
+	unsigned short owner_user_id;		 // 所有者用户 ID
+	unsigned short owner_group_id;		 // 所有者组 ID
+	unsigned short file_size;			 // 文件大小
+	unsigned int block_addresses[NADDR]; // 数据块地址（直接/间接）
 };
 
 struct Dinode
@@ -121,57 +121,57 @@ struct FileSystem
 	char superblock_modified_flag; /* 超级块修改标志 */
 };
 
-struct Pwd
+struct UserPassword
 {
-	unsigned short p_uid;
-	unsigned short p_gid;
-	char password[PWDSIZ];
+	unsigned short user_id;	 // 用户 ID
+	unsigned short group_id; // 组 ID
+	char password[PWDSIZ];	 // 用户密码
 };
 
-struct Hinode
+struct InodeHashTableEntry
 {
-	struct INode *i_forw; /*HASH表指针*/
+	INode *i_forw; /*HASH表指针*/
 };
 
 struct File
 {
-	char f_flag;		   /* 文件操作标志 */
-	unsigned int f_count;  /* 引用计数 */
-	struct INode *f_inode; /* 指向内存 i 节点 */
-	unsigned long f_off;   /* 读/写字符指针偏移量 */
+	char flag;					  /* 文件操作标志 */
+	unsigned int reference_count; /* 引用计数 */
+	INode *inode;				  /* 指向内存 i 节点 */
+	unsigned long offset;		  /* 读/写字符指针偏移量 */
 };
 
-struct User
+struct UserContext
 {
-	unsigned short u_default_mode;
-	unsigned short u_uid;
-	unsigned short u_gid;
-	unsigned short u_ofile[NOFILE]; /*用户打开文件表*/
+	unsigned short default_mode;	   /* 默认文件权限模式 */
+	unsigned short user_id;			   /* 用户 ID */
+	unsigned short group_id;		   /* 用户组 ID */
+	unsigned short open_files[NOFILE]; /* 用户打开文件表 */
 };
 
 // all variables
-extern struct Hinode hinode[NHINO];
-extern struct Directory dir; /*当前目录(在内存中全部读入)*/
-extern struct File sys_ofile[SYSOPENFILE];
-extern struct FileSystem fileSystem; /*内存中的超级块*/
-extern struct Pwd pwd[PWDNUM];
-extern struct User user[USERNUM];
+extern InodeHashTableEntry hinode[NHINO];
+extern Directory dir; /*当前目录(在内存中全部读入)*/
+extern File sys_ofile[SYSOPENFILE];
+extern FileSystem fileSystem; /*内存中的超级块*/
+extern UserPassword pwd[PWDNUM];
+extern UserContext user[USERNUM];
 // extern struct file     *fd;           /*the file system column of all the system*/    //xiao
-extern struct INode *cur_path_inode;
+extern INode *cur_path_inode;
 extern int user_id; /* 用户 ID */
 extern char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
 
 // all functions
-extern struct INode *iget(unsigned int);
-extern void iput(struct INode *);
+extern INode *iget(unsigned int);
+extern void iput(INode *);
 extern unsigned int balloc(unsigned int);
 extern unsigned int balloc();
 extern void bfree(unsigned int);
-extern struct INode *ialloc();
+extern INode *ialloc();
 extern void ifree(unsigned int);
 extern int namei(const char *);
 extern unsigned short iname(const char *);
-extern unsigned int access(unsigned int, struct INode *, unsigned short);
+extern unsigned int access(unsigned int, INode *, unsigned short);
 extern void _dir();
 extern void mkdir(const char *);
 extern void chdir(const char *);

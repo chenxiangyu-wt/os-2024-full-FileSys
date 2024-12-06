@@ -45,7 +45,7 @@ struct INode *ialloc()
 	/*分配空闲i节点*/
 	temp_inode = iget(fileSystem.free_inodes[fileSystem.free_inode_pointer]);
 	memcpy(disk + DINODESTART + fileSystem.free_inodes[fileSystem.free_inode_pointer] * DINODESIZ,
-		   &temp_inode->di_number, sizeof(struct Dinode));
+		   &temp_inode->link_count, sizeof(struct Dinode));
 	fileSystem.free_inode_pointer++;
 	fileSystem.free_inode_count--;
 	fileSystem.superblock_modified_flag = SUPDATE;

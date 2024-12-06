@@ -6,45 +6,45 @@ void format()
 {
 	INode *inode;
 	DirectoryEntry dir_buf[BLOCKSIZ / (DIRSIZ + 4)];
-	Pwd passwd[32];
+	UserPassword passwd[32];
 	unsigned int block_buf[BLOCKSIZ / sizeof(int)];
 
 	// 初始化硬盘
 	memset(disk, 0x00, ((DINODEBLK + FILEBLK + 2) * BLOCKSIZ));
 
 	/* 0.initialize the passwd */
-	passwd[0].p_uid = 2116;
-	passwd[0].p_gid = 03;
+	passwd[0].user_id = 2116;
+	passwd[0].group_id = 03;
 	strcpy(passwd[0].password, "dddd");
 
-	passwd[1].p_uid = 2117;
-	passwd[1].p_gid = 03;
+	passwd[1].user_id = 2117;
+	passwd[1].group_id = 03;
 	strcpy(passwd[1].password, "bbbb");
 
-	passwd[2].p_uid = 2118;
-	passwd[2].p_gid = 04;
+	passwd[2].user_id = 2118;
+	passwd[2].group_id = 04;
 	strcpy(passwd[2].password, "abcd");
 
-	passwd[3].p_uid = 2119;
-	passwd[3].p_gid = 04;
+	passwd[3].user_id = 2119;
+	passwd[3].group_id = 04;
 	strcpy(passwd[3].password, "cccc");
 
-	passwd[4].p_uid = 2120;
-	passwd[4].p_gid = 05;
+	passwd[4].user_id = 2120;
+	passwd[4].group_id = 05;
 	strcpy(passwd[4].password, "eeee");
 
 	/* 1.creat the main directory and its sub dir etc and the file password */
 
-	inode = iget(0);	  /* 0 empty dinode id*/
-	inode->di_number = 1; //??空i节点有何用????
-	inode->di_mode = DIEMPTY;
+	inode = iget(0);	   /* 0 empty dinode id*/
+	inode->link_count = 1; //??空i节点有何用????
+	inode->mode = DIEMPTY;
 	iput(inode);
 
 	inode = iget(1); /* 1 main dir id*/
-	inode->di_number = 1;
-	inode->di_mode = DEFAULTMODE | DIDIR;
-	inode->di_size = 3 * (DIRSIZ + 4);
-	inode->di_addr[0] = 0; /*block 0# is used by the main directory*/
+	inode->link_count = 1;
+	inode->mode = DEFAULTMODE | DIDIR;
+	inode->file_size = 3 * (DIRSIZ + 4);
+	inode->block_addresses[0] = 0; /*block 0# is used by the main directory*/
 
 	strcpy(dir_buf[0].name, "..");
 	dir_buf[0].inode_number = 1;
@@ -57,10 +57,10 @@ void format()
 	iput(inode);
 
 	inode = iget(2); /* 2  etc dir id */
-	inode->di_number = 1;
-	inode->di_mode = DEFAULTMODE | DIDIR;
-	inode->di_size = 3 * (DIRSIZ + 4);
-	inode->di_addr[0] = 1; /*block 1# is used by the etc directory*/
+	inode->link_count = 1;
+	inode->mode = DEFAULTMODE | DIDIR;
+	inode->file_size = 3 * (DIRSIZ + 4);
+	inode->block_addresses[0] = 1; /*block 1# is used by the etc directory*/
 
 	strcpy(dir_buf[0].name, "..");
 	dir_buf[0].inode_number = 1;
@@ -73,19 +73,19 @@ void format()
 	iput(inode);
 
 	inode = iget(3); /* 3  password id */
-	inode->di_number = 1;
-	inode->di_mode = DEFAULTMODE | DIFILE;
-	inode->di_size = BLOCKSIZ;
-	inode->di_addr[0] = 2; /*block 2# is used by the password file*/
+	inode->link_count = 1;
+	inode->mode = DEFAULTMODE | DIFILE;
+	inode->file_size = BLOCKSIZ;
+	inode->block_addresses[0] = 2; /*block 2# is used by the password file*/
 
 	for (int i = 5; i < PWDNUM; i++)
 	{
-		passwd[i].p_uid = 0;
-		passwd[i].p_gid = 0;
+		passwd[i].user_id = 0;
+		passwd[i].group_id = 0;
 		strcpy(passwd[i].password, "            "); // PWDSIZ " "
 	}
 
-	memcpy(pwd, passwd, 32 * sizeof(struct Pwd));
+	memcpy(pwd, passwd, 32 * sizeof(struct UserPassword));
 	memcpy(disk + DATASTART + BLOCKSIZ * 2, passwd, BLOCKSIZ);
 	iput(inode);
 

@@ -13,22 +13,22 @@ INode *iget(unsigned int dinodeid)
 	long addr;
 	struct INode *temp, *newinode;
 
-	inodeid = dinodeid % NHINO;			// 计算内存结点应该在第几个哈希队列里
-	if (hinode[inodeid].i_forw == NULL) // 若该哈希队列为空，内存结点一定未被创建
+	inodeid = dinodeid % NHINO;				// 计算内存结点应该在第几个哈希队列里
+	if (hinode[inodeid].prev_inode == NULL) // 若该哈希队列为空，内存结点一定未被创建
 		existed = 0;
 	else // 若不为空，从该哈希队列头开始查找
 	{
-		temp = hinode[inodeid].i_forw;
+		temp = hinode[inodeid].prev_inode;
 		while (temp)
 		{
-			if (temp->i_ino == dinodeid) // 若找到
+			if (temp->status_flag == dinodeid) // 若找到
 			{
 				existed = 1;
-				temp->i_count++;
+				temp->reference_count++;
 				return temp; // 返回该内存结点指针
 			}
 			else
-				temp = temp->i_forw;
+				temp = temp->prev;
 		}
 	}
 
@@ -40,19 +40,19 @@ INode *iget(unsigned int dinodeid)
 	newinode = (struct INode *)malloc(sizeof(struct INode));
 
 	/* 3. 用磁盘i结点初始化内存i结点 */
-	memcpy(&(newinode->di_number), disk + addr, DINODESIZ);
+	memcpy(&(newinode->link_count), disk + addr, DINODESIZ);
 
 	/* 4. 将内存i结点链入相应的哈希队列里*/
-	newinode->i_forw = hinode[inodeid].i_forw;
-	hinode[inodeid].i_forw = newinode;
-	newinode->i_back = newinode;
-	if (newinode->i_forw)
-		newinode->i_forw->i_back = newinode;
+	newinode->prev = hinode[inodeid].prev_inode;
+	hinode[inodeid].prev_inode = newinode;
+	newinode->next = newinode;
+	if (newinode->prev)
+		newinode->prev->next = newinode;
 
 	/*5. 初始化内存i结点的其他数据项 */
-	newinode->i_count = 1;
-	newinode->i_flag = 0; /* 表示未更新 */
-	newinode->i_ino = dinodeid;
+	newinode->reference_count = 1;
+	newinode->status_flag = 0; /* 表示未更新 */
+	newinode->status_flag = dinodeid;
 
 	return newinode;
 }
@@ -66,46 +66,46 @@ void iput(struct INode *pinode)
 	long addr;
 	unsigned int block_num;
 
-	if (pinode->i_count > 1) // 若引用计数>1
+	if (pinode->reference_count > 1) // 若引用计数>1
 	{
-		pinode->i_count--;
+		pinode->reference_count--;
 
 		return;
 	}
 	else
 	{
-		if (pinode->di_number != 0) // 若联结计数不为0
+		if (pinode->link_count != 0) // 若联结计数不为0
 		{
 			/* 把内存i结点的内容写回磁盘i结点 */
-			addr = DINODESTART + pinode->i_ino * DINODESIZ;
-			memcpy(disk + addr, &pinode->di_number, DINODESIZ);
+			addr = DINODESTART + pinode->status_flag * DINODESIZ;
+			memcpy(disk + addr, &pinode->link_count, DINODESIZ);
 		}
 		else
 		{
 			/* 删除磁盘i结点和文件对应的物理块 */
-			block_num = pinode->di_size / BLOCKSIZ;
+			block_num = pinode->file_size / BLOCKSIZ;
 			for (unsigned int i = 0; i < block_num; i++)
-				bfree(pinode->di_addr[i]);
-			ifree(pinode->i_ino);
+				bfree(pinode->block_addresses[i]);
+			ifree(pinode->status_flag);
 		}
 
 		/* 释放内存i结点 */
 		{
 			int inodeid;
-			inodeid = (pinode->i_ino) % NHINO; // 找到所在的哈希队列
+			inodeid = (pinode->status_flag) % NHINO; // 找到所在的哈希队列
 
 			/* 从该哈希队列里删除 */
-			if (hinode[inodeid].i_forw == pinode)
+			if (hinode[inodeid].prev_inode == pinode)
 			{
-				hinode[inodeid].i_forw = pinode->i_forw;
-				if (pinode->i_forw)
-					pinode->i_forw->i_back = pinode->i_forw;
+				hinode[inodeid].prev_inode = pinode->prev;
+				if (pinode->prev)
+					pinode->prev->next = pinode->prev;
 			}
 			else
 			{
-				pinode->i_back->i_forw = pinode->i_forw;
-				if (pinode->i_forw)
-					pinode->i_forw->i_back = pinode->i_back;
+				pinode->next->prev = pinode->prev;
+				if (pinode->prev)
+					pinode->prev->next = pinode->next;
 			}
 		}
 		free(pinode);
