@@ -46,7 +46,5 @@ void install()
 			   disk + DATASTART + BLOCKSIZ * cur_path_inode->block_addresses[i], DINODESIZ);
 	}
 
-	memcpy(&dir.entries[(BLOCKSIZ) / (ENTRYNUM + 4) * i],
-		   disk + DATASTART + BLOCKSIZ * cur_path_inode->block_addresses[i], DINODESIZ);
 	return;
 }
