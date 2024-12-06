@@ -12,6 +12,7 @@ struct DirectoryEntry
 {
     char name[ENTRYNAMELEN];   // 文件或目录名称
     unsigned int inode_number; // i 节点编号
+    uint8_t type;              // 文件类型
 };
 
 struct Directory

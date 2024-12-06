@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 #include "filesys.h"
 
 void format()
 {
 	MemoryINode *inode;
-	DirectoryEntry dir_buf[BLOCKSIZ / (ENTRYNUM + 4)];
+	DirectoryEntry dir_buf[BLOCKSIZ / (sizeof(DirectoryEntry))];
 	UserPassword passwd[32];
 	unsigned int block_buf[BLOCKSIZ / sizeof(int)];
 
@@ -43,7 +44,7 @@ void format()
 	inode = iget(1); /* 1 main dir id*/
 	inode->reference_count = 1;
 	inode->mode = DEFAULTMODE | DIDIR;
-	inode->file_size = 3 * (ENTRYNUM + 4);
+	inode->file_size = 3 * (sizeof(DirectoryEntry));
 	inode->block_addresses[0] = 0; /*block 0# is used by the main directory*/
 
 	strcpy(dir_buf[0].name, "..");
@@ -52,14 +53,16 @@ void format()
 	dir_buf[1].inode_number = 1;
 	strcpy(dir_buf[2].name, "etc");
 	dir_buf[2].inode_number = 2;
-
-	memcpy(disk + DATASTART, &dir_buf, 3 * (ENTRYNUM + 4));
+	std::cout << dir_buf[0].name << std::endl;
+	std::cout << dir_buf[1].name << std::endl;
+	std::cout << dir_buf[2].name << std::endl;
+	memcpy(disk + DATASTART, &dir_buf, 3 * (sizeof(DirectoryEntry)));
 	iput(inode);
 
 	inode = iget(2); /* 2  etc dir id */
 	inode->reference_count = 1;
 	inode->mode = DEFAULTMODE | DIDIR;
-	inode->file_size = 3 * (ENTRYNUM + 4);
+	inode->file_size = 3 * (sizeof(DirectoryEntry));
 	inode->block_addresses[0] = 1; /*block 1# is used by the etc directory*/
 
 	strcpy(dir_buf[0].name, "..");
@@ -69,7 +72,7 @@ void format()
 	strcpy(dir_buf[2].name, "password");
 	dir_buf[2].inode_number = 3;
 
-	memcpy(disk + DATASTART + BLOCKSIZ * 1, dir_buf, 3 * (ENTRYNUM + 4));
+	memcpy(disk + DATASTART + BLOCKSIZ * 1, dir_buf, 3 * (sizeof(DirectoryEntry)));
 	iput(inode);
 
 	inode = iget(3); /* 3  password id */

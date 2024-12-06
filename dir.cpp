@@ -8,52 +8,55 @@ void _dir()
 	unsigned int mode;
 	uint32_t i, j, k; // xiao
 	struct MemoryINode *temp_inode;
-
-	printf("\n CURRENT DIRECTORY :%s\n", dir.entries[0].name);
-	printf("当前共有%d个文件/目录\n", dir.entry_count);
-	for (i = 0; i < ENTRYNAMELEN; i++)
+	for (auto item : dir.entries)
 	{
-		if (dir.entries[i].inode_number != DIEMPTY)
-		{
-			printf("%-14s", dir.entries[i].name);
-			temp_inode = iget(dir.entries[i].inode_number);
-			mode = temp_inode->mode & 00777;
-			for (j = 0; j < 9; j++)
-			{
-				if (mode % 2)
-				{
-					printf("x");
-				}
-				else
-				{
-					printf("-");
-				}
-				mode = mode / 2;
-			}
-			printf("\ti_ino->%d\t", temp_inode->status_flag);
-			if (temp_inode->mode & DIFILE)
-			{
-				printf(" %d ", temp_inode->file_size);
-				printf("block chain:");
-				j = (temp_inode->file_size % BLOCKSIZ) ? 1 : 0;
-				for (k = 0; k < temp_inode->file_size / BLOCKSIZ + j; k++)
-					printf("%4d", temp_inode->block_addresses[k]);
-				printf("\n");
-			}
-			else
-			{
-				printf("<dir>\n");
-			} // else
-			iput(temp_inode);
-		} // if (dir.direct[i].d_ino != DIEMPTY)
-	} // for
+		std::cout << item.name << std::endl;
+	}
+	// printf("\n CURRENT DIRECTORY :%s\n", dir.entries[0].name);
+	// printf("当前共有%d个文件/目录\n", dir.entry_count);
+	// for (i = 0; i < ENTRYNAMELEN; i++)
+	// {
+	// 	if (dir.entries[i].inode_number != DIEMPTY)
+	// 	{
+	// 		printf("%-14s", dir.entries[i].name);
+	// 		temp_inode = iget(dir.entries[i].inode_number);
+	// 		mode = temp_inode->mode & 00777;
+	// 		for (j = 0; j < 9; j++)
+	// 		{
+	// 			if (mode % 2)
+	// 			{
+	// 				printf("x");
+	// 			}
+	// 			else
+	// 			{
+	// 				printf("-");
+	// 			}
+	// 			mode = mode / 2;
+	// 		}
+	// 		printf("\ti_ino->%d\t", temp_inode->status_flag);
+	// 		if (temp_inode->mode & DIFILE)
+	// 		{
+	// 			printf(" %d ", temp_inode->file_size);
+	// 			printf("block chain:");
+	// 			j = (temp_inode->file_size % BLOCKSIZ) ? 1 : 0;
+	// 			for (k = 0; k < temp_inode->file_size / BLOCKSIZ + j; k++)
+	// 				printf("%4d", temp_inode->block_addresses[k]);
+	// 			printf("\n");
+	// 		}
+	// 		else
+	// 		{
+	// 			printf("<dir>\n");
+	// 		} // else
+	// 		iput(temp_inode);
+	// 	} // if (dir.direct[i].d_ino != DIEMPTY)
+	// } // for
 	return;
 }
 void mkdir(const char *dirname)
 {
 	int dirid, dirpos;
 	MemoryINode *inode;
-	DirectoryEntry buf[BLOCKSIZ / (ENTRYNUM + 4)];
+	DirectoryEntry buf[BLOCKSIZ / (sizeof(DirectoryEntry))];
 	unsigned int block;
 
 	dirid = namei(dirname);
@@ -80,7 +83,7 @@ void mkdir(const char *dirname)
 	block = balloc();
 	memcpy(disk + DATASTART + block * BLOCKSIZ, buf, BLOCKSIZ);
 
-	inode->file_size = 2 * (ENTRYNUM + 4);
+	inode->file_size = 2 * (sizeof(DirectoryEntry));
 	inode->reference_count = 1;
 	inode->mode = user[user_id].default_mode | DIDIR;
 	inode->owner_uid = user[user_id].user_id;
@@ -116,7 +119,7 @@ void chdir(const char *dirname)
 		{
 			for (j = ENTRYNAMELEN - 1; j >= 0 && dir.entries[j].inode_number == 0; j--)
 				;
-			memcpy(&dir.entries[i], &dir.entries[j], ENTRYNUM + 4); // xiao
+			memcpy(&dir.entries[i], &dir.entries[j], sizeof(DirectoryEntry)); // xiao
 			dir.entries[j].inode_number = 0;
 		}
 	}
@@ -125,13 +128,13 @@ void chdir(const char *dirname)
 	{
 		bfree(cur_path_inode->block_addresses[i]);
 	}
-	for (unsigned int i = 0; i < dir.entry_count; i += BLOCKSIZ / (ENTRYNUM + 4))
+	for (unsigned int i = 0; i < dir.entry_count; i += BLOCKSIZ / (sizeof(DirectoryEntry)))
 	{
 		block = balloc();
 		cur_path_inode->block_addresses[i] = block;
 		memcpy(disk + DATASTART + block * BLOCKSIZ, &dir.entries[i], BLOCKSIZ);
 	}
-	cur_path_inode->file_size = dir.entry_count * (ENTRYNUM + 4);
+	cur_path_inode->file_size = dir.entry_count * (sizeof(DirectoryEntry));
 	iput(cur_path_inode);
 	cur_path_inode = inode;
 
@@ -139,9 +142,9 @@ void chdir(const char *dirname)
 	for (unsigned short i = 0; i < inode->file_size / BLOCKSIZ + 1; i++)
 	{
 		memcpy(&dir.entries[j], disk + DATASTART + inode->block_addresses[i] * BLOCKSIZ, BLOCKSIZ);
-		j += BLOCKSIZ / (ENTRYNUM + 4);
+		j += BLOCKSIZ / (sizeof(DirectoryEntry));
 	}
-	dir.entry_count = cur_path_inode->file_size / (ENTRYNUM + 4);
+	dir.entry_count = cur_path_inode->file_size / (sizeof(DirectoryEntry));
 	for (unsigned int i = dir.entry_count; i < ENTRYNAMELEN; i++)
 	{
 		dir.entries[i].inode_number = 0;

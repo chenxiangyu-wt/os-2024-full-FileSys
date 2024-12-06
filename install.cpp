@@ -4,7 +4,7 @@
 
 void install()
 {
-
+	printf("sizeof(DirectoryEntry): %ld\n", sizeof(DirectoryEntry));
 	/* 1. read the filsys from the superblock*/ // xiao
 	memcpy(&fileSystem, disk + BLOCKSIZ, sizeof(FileSystem));
 
@@ -32,7 +32,7 @@ void install()
 
 	/*5. read the main directory to initialize the dir*/
 	cur_path_inode = iget(1);
-	dir.entry_count = cur_path_inode->file_size / (ENTRYNUM + 4); // xiao 2-->4
+	dir.entry_count = cur_path_inode->file_size / (sizeof(DirectoryEntry)); // xiao 2-->4
 
 	for (unsigned int i = 0; i < ENTRYNAMELEN; i++)
 	{
@@ -40,9 +40,9 @@ void install()
 		dir.entries[i].inode_number = 0;
 	}
 	unsigned int i;
-	for (i = 0; i < dir.entry_count / (BLOCKSIZ / (ENTRYNUM + 4)); i++)
+	for (i = 0; i < dir.entry_count / (BLOCKSIZ / (sizeof(DirectoryEntry))); i++)
 	{
-		memcpy(&dir.entries[(BLOCKSIZ / (ENTRYNUM + 4)) * i],
+		memcpy(&dir.entries[(BLOCKSIZ / (sizeof(DirectoryEntry))) * i],
 			   disk + DATASTART + BLOCKSIZ * cur_path_inode->block_addresses[i], DINODESIZ);
 	}
 
