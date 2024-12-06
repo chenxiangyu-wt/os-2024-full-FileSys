@@ -130,7 +130,7 @@ struct UserPassword
 
 struct InodeHashTableEntry
 {
-	INode *i_forw; /*HASH表指针*/
+	INode *prev_inode; /*HASH表指针*/
 };
 
 struct File
