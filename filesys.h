@@ -1,14 +1,15 @@
 #ifndef _FILESYS_H
 #define _FILESYS_H
+#include <cstdint>
 #include "INode.hpp"
 // #define exit(a)		return			//建议使用 return         by tangfl
 
 // All Defines
 constexpr int BLOCKSIZ = 512; // Size of each block
 constexpr int SYSOPENFILE = 40;
-constexpr int DIRNUM = 128; // Maximum number of subdirectories in a directory
-constexpr int DIRSIZ = 12;	// Directory name length, windows32 int length is 4, changed from 14 to 12
-constexpr int PWDSIZ = 12;	// Maximum password length
+constexpr uint16_t ENTRYNAMELEN = 128; // Maximum number of subdirectories in a directory
+constexpr uint16_t ENTRYNUM = 12;	   // Directory name length, windows32 int length is 4, changed from 14 to 12
+constexpr int PWDSIZ = 12;			   // Maximum password length
 constexpr int PWDNUM = 32;
 constexpr int NOFILE = 20; // Maximum number of files a user can open
 constexpr int NHINO = 128; // Hash number, must be power of 2
@@ -69,15 +70,15 @@ constexpr int FAPPEND = 00004;
 // 目录项
 struct DirectoryEntry
 {
-	char name[DIRSIZ];		   // 文件或目录名称
+	char name[ENTRYNUM];	   // 文件或目录名称
 	unsigned int inode_number; // i 节点编号
 };
 
 // 目录
 struct Directory
 {
-	struct DirectoryEntry entries[DIRNUM]; // 目录项数组
-	unsigned int entry_count;			   // 当前目录中的有效项数
+	struct DirectoryEntry entries[ENTRYNAMELEN]; // 目录项数组
+	unsigned int entry_count;					 // 当前目录中的有效项数
 };
 struct FileSystem
 {

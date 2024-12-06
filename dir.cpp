@@ -10,7 +10,7 @@ void _dir()
 
 	printf("\n CURRENT DIRECTORY :%s\n", dir.entries[0].name);
 	printf("当前共有%d个文件/目录\n", dir.entry_count);
-	for (i = 0; i < DIRNUM; i++)
+	for (i = 0; i < ENTRYNAMELEN; i++)
 	{
 		if (dir.entries[i].inode_number != DIEMPTY)
 		{
@@ -52,7 +52,7 @@ void mkdir(const char *dirname)
 {
 	int dirid, dirpos;
 	MemoryINode *inode;
-	DirectoryEntry buf[BLOCKSIZ / (DIRSIZ + 4)];
+	DirectoryEntry buf[BLOCKSIZ / (ENTRYNUM + 4)];
 	unsigned int block;
 
 	dirid = namei(dirname);
@@ -79,7 +79,7 @@ void mkdir(const char *dirname)
 	block = balloc();
 	memcpy(disk + DATASTART + block * BLOCKSIZ, buf, BLOCKSIZ);
 
-	inode->file_size = 2 * (DIRSIZ + 4);
+	inode->file_size = 2 * (ENTRYNUM + 4);
 	inode->reference_count = 1;
 	inode->mode = user[user_id].default_mode | DIDIR;
 	inode->owner_uid = user[user_id].user_id;
@@ -113,9 +113,9 @@ void chdir(const char *dirname)
 	{
 		if (dir.entries[i].inode_number == 0)
 		{
-			for (j = DIRNUM - 1; j >= 0 && dir.entries[j].inode_number == 0; j--)
+			for (j = ENTRYNAMELEN - 1; j >= 0 && dir.entries[j].inode_number == 0; j--)
 				;
-			memcpy(&dir.entries[i], &dir.entries[j], DIRSIZ + 4); // xiao
+			memcpy(&dir.entries[i], &dir.entries[j], ENTRYNUM + 4); // xiao
 			dir.entries[j].inode_number = 0;
 		}
 	}
@@ -124,13 +124,13 @@ void chdir(const char *dirname)
 	{
 		bfree(cur_path_inode->block_addresses[i]);
 	}
-	for (unsigned int i = 0; i < dir.entry_count; i += BLOCKSIZ / (DIRSIZ + 4))
+	for (unsigned int i = 0; i < dir.entry_count; i += BLOCKSIZ / (ENTRYNUM + 4))
 	{
 		block = balloc();
 		cur_path_inode->block_addresses[i] = block;
 		memcpy(disk + DATASTART + block * BLOCKSIZ, &dir.entries[i], BLOCKSIZ);
 	}
-	cur_path_inode->file_size = dir.entry_count * (DIRSIZ + 4);
+	cur_path_inode->file_size = dir.entry_count * (ENTRYNUM + 4);
 	iput(cur_path_inode);
 	cur_path_inode = inode;
 
@@ -138,10 +138,10 @@ void chdir(const char *dirname)
 	for (unsigned short i = 0; i < inode->file_size / BLOCKSIZ + 1; i++)
 	{
 		memcpy(&dir.entries[j], disk + DATASTART + inode->block_addresses[i] * BLOCKSIZ, BLOCKSIZ);
-		j += BLOCKSIZ / (DIRSIZ + 4);
+		j += BLOCKSIZ / (ENTRYNUM + 4);
 	}
-	dir.entry_count = cur_path_inode->file_size / (DIRSIZ + 4);
-	for (unsigned int i = dir.entry_count; i < DIRNUM; i++)
+	dir.entry_count = cur_path_inode->file_size / (ENTRYNUM + 4);
+	for (unsigned int i = dir.entry_count; i < ENTRYNAMELEN; i++)
 	{
 		dir.entries[i].inode_number = 0;
 	}

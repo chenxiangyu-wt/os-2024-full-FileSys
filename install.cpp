@@ -32,21 +32,21 @@ void install()
 
 	/*5. read the main directory to initialize the dir*/
 	cur_path_inode = iget(1);
-	dir.entry_count = cur_path_inode->file_size / (DIRSIZ + 4); // xiao 2-->4
+	dir.entry_count = cur_path_inode->file_size / (ENTRYNUM + 4); // xiao 2-->4
 
-	for (unsigned int i = 0; i < DIRNUM; i++)
+	for (unsigned int i = 0; i < ENTRYNAMELEN; i++)
 	{
 		strcpy(dir.entries[i].name, "             ");
 		dir.entries[i].inode_number = 0;
 	}
 	unsigned int i;
-	for (i = 0; i < dir.entry_count / (BLOCKSIZ / (DIRSIZ + 4)); i++)
+	for (i = 0; i < dir.entry_count / (BLOCKSIZ / (ENTRYNUM + 4)); i++)
 	{
-		memcpy(&dir.entries[(BLOCKSIZ / (DIRSIZ + 4)) * i],
+		memcpy(&dir.entries[(BLOCKSIZ / (ENTRYNUM + 4)) * i],
 			   disk + DATASTART + BLOCKSIZ * cur_path_inode->block_addresses[i], DINODESIZ);
 	}
 
-	memcpy(&dir.entries[(BLOCKSIZ) / (DIRSIZ + 4) * i],
+	memcpy(&dir.entries[(BLOCKSIZ) / (ENTRYNUM + 4) * i],
 		   disk + DATASTART + BLOCKSIZ * cur_path_inode->block_addresses[i], DINODESIZ);
 	return;
 }

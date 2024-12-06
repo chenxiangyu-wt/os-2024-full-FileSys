@@ -9,7 +9,7 @@ int namei(const char *name)
 {
 	int i;
 
-	for (i = 0; i < DIRNUM; i++)
+	for (i = 0; i < ENTRYNAMELEN; i++)
 	{
 		if ((!strcmp(dir.entries[i].name, name)) && (dir.entries[i].inode_number != 0)) // 名字匹配且目录项有效；
 		{
@@ -27,7 +27,7 @@ unsigned short iname(const char *name)
 {
 	int i, notfound = 1;
 
-	for (i = 0; ((i < DIRNUM) && (notfound)); i++)
+	for (i = 0; ((i < ENTRYNAMELEN) && (notfound)); i++)
 	{
 		if (dir.entries[i].inode_number == 0) // 该目录项未分配。
 		{
