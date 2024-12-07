@@ -8,6 +8,16 @@ constexpr uint8_t DENTRY_FILE = 0;
 constexpr uint8_t DENTRY_DIR = 1;
 constexpr uint8_t DENTRY_EMPTY = 2;
 
+// f_flag constants
+constexpr int FREAD = 00001;
+constexpr int FWRITE = 00002;
+constexpr int FAPPEND = 00004;
+
+// mode constants
+constexpr int READ = 1;
+constexpr int WRITE = 2;
+constexpr int EXICUTE = 3;
+
 struct DirectoryEntry
 {
     char name[ENTRY_NAME_LEN]; // 文件或目录名称

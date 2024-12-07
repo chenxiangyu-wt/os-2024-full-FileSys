@@ -1,6 +1,8 @@
 #include <iostream>
-#include "filesys.hpp"
-#include "CommandLine.hpp"
+#include "file_sys.hpp"
+#include "command_line.hpp"
+#include "file_sys.hpp"
+#include "globals.hpp"
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;

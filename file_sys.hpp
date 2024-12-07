@@ -2,10 +2,9 @@
 #define _FILESYS_H
 #include <cstdint>
 
-#include "INode.hpp"
-#include "Permissions.hpp"
-#include "Directory.hpp"
-// #define exit(a)		return			//建议使用 return         by tangfl
+#include "iNode.hpp"
+#include "permissions.hpp"
+#include "directory.hpp"
 
 // All Defines
 constexpr int BLOCK_SIZE = 512; // Size of each block
@@ -23,24 +22,11 @@ constexpr int DISK_INODE_START_POINTOR = 2 * BLOCK_SIZE;					// i-node start add
 constexpr int DATA_START_POINTOR = (2 + DISK_INODE_AREA_SIZE) * BLOCK_SIZE; // Data area start address
 constexpr int DISK_SIZE = (DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE;
 
-// mode constants
-
-constexpr int READ = 1;
-constexpr int WRITE = 2;
-constexpr int EXICUTE = 3;
-
-constexpr int DEFAULTMODE = 00777; // Default permission
-
 // s_fmod constants
 constexpr int SUPDATE = 00001;
 
-// f_flag constants
-constexpr int FREAD = 00001;
-constexpr int FWRITE = 00002;
-constexpr int FAPPEND = 00004;
-
 /* error */
-#define DISKFULL 65535
+constexpr int DISKFULL = 65535; /* 磁盘已满 */
 
 /* fseek origin */
 // #define SEEK_SET  		0

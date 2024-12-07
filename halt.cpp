@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "filesys.hpp"
+#include "file_sys.hpp"
 
 void halt()
 {
@@ -34,5 +34,5 @@ void halt()
 
 	/*5. say GOOD BYE to all the user*/
 	printf("\nGood Bye. See You Next Time. Please turn off the switch\n");
-	exit(0);
+	return;
 }

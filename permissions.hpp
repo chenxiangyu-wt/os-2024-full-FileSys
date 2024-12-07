@@ -20,6 +20,8 @@ constexpr int ODIREAD = 00100;
 constexpr int ODIWRITE = 00200;
 constexpr int ODIEXICUTE = 00400;
 
+constexpr int DEFAULTMODE = 00777; // Default permission
+
 struct UserPassword
 {
     unsigned short user_id;  // 用户 ID

@@ -1,5 +1,5 @@
-#include "CommandLine.hpp"
-#include "filesys.hpp"
+#include "command_line.hpp"
+#include "file_sys.hpp"
 #include <sstream>
 #include <cstdlib>
 
