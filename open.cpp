@@ -1,11 +1,13 @@
 #include <stdio.h>
-#include "filesys.h"
+#include "file_sys.hpp"
+#include "globals.hpp"
+#include "dEntry.hpp"
 
-short open(int user_id, char *filename, char openmode)
+short open(int user_id, const char *filename, char openmode)
 {
 	unsigned int dinodeid;
-	struct inode *inode;
-	int i, j, k;
+	struct MemoryINode *inode;
+	uint32_t i, j, k;
 
 	dinodeid = namei(filename);
 	if (dinodeid == 0)
@@ -13,8 +15,8 @@ short open(int user_id, char *filename, char openmode)
 		printf("\nfile does not existed!!!\n");
 		return -1;
 	}
-	inode = iget(dir.direct[dinodeid].d_ino);
-	if (!(inode->di_mode & DIFILE))
+	inode = iget(dir.entries[dinodeid].inode_number);
+	if (!(inode->mode & DIFILE))
 	{
 		printf("%s is not a file!!!\n", filename);
 		iput(inode);
@@ -29,7 +31,7 @@ short open(int user_id, char *filename, char openmode)
 
 	for (i = 1; i < SYSOPENFILE; i++)
 	{
-		if (sys_ofile[i].f_count == 0)
+		if (sys_ofile[i].reference_count == 0)
 			break;
 	}
 
@@ -40,41 +42,41 @@ short open(int user_id, char *filename, char openmode)
 		return -1;
 	}
 
-	sys_ofile[i].f_inode = inode;
-	sys_ofile[i].f_flag = openmode;
-	sys_ofile[i].f_count = 1;
+	sys_ofile[i].inode = inode;
+	sys_ofile[i].flag = openmode;
+	sys_ofile[i].reference_count = 1;
 
 	if (openmode & FAPPEND)
 	{
-		sys_ofile[i].f_off = inode->di_size;
+		sys_ofile[i].offset = inode->file_size;
 	}
 	else
 	{
-		sys_ofile[i].f_off = 0;
+		sys_ofile[i].offset = 0;
 	}
 
 	for (j = 0; j < NOFILE; j++)
 	{
-		if (user[user_id].u_ofile[j] == SYSOPENFILE + 1)
+		if (user[user_id].open_files[j] == SYSOPENFILE + 1)
 			break;
 	}
 
 	if (j == NOFILE)
 	{
 		printf("\nuser open file too much!!!\n");
-		sys_ofile[i].f_count = 0;
+		sys_ofile[i].reference_count = 0;
 		iput(inode);
 		return -1;
 	}
 
-	user[user_id].u_ofile[j] = i;
+	user[user_id].open_files[j] = i;
 
 	if (openmode & FWRITE)
 	{
-		k = inode->di_size % BLOCKSIZ ? 1 : 0;
-		for (i = 0; i < inode->di_size / BLOCKSIZ + k; i++)
-			bfree(inode->di_addr[i]);
-		inode->di_size = 0;
+		k = inode->file_size % BLOCK_SIZE ? 1 : 0;
+		for (i = 0; i < inode->file_size / BLOCK_SIZE + k; i++)
+			bfree(inode->block_addresses[i]);
+		inode->file_size = 0;
 	}
 	return j;
 }

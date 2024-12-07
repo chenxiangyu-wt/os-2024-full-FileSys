@@ -1,17 +1,17 @@
 # 编译器
-CC = gcc
+CC = g++
 
 # 编译选项
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c++11
 
 # 项目名
 TARGET = out/filesys
 
 # 源文件列表
-SRCS = $(wildcard *.c)
+SRCS = $(wildcard *.cpp)
 
 # 对应的目标文件列表
-OBJS = $(patsubst %.c, out/%.o, $(SRCS))
+OBJS = $(patsubst %.cpp, out/%.o, $(SRCS))
 
 # 默认目标
 all: $(TARGET)
@@ -21,8 +21,8 @@ $(TARGET): $(OBJS)
 	@mkdir -p out
 	$(CC) $(CFLAGS) -o $@ $^
 
-# 编译 .c 文件生成 .o 文件
-out/%.o: %.c
+# 编译 .cpp 文件生成 .o 文件
+out/%.o: %.cpp
 	@mkdir -p out
 	$(CC) $(CFLAGS) -c $< -o $@
 
