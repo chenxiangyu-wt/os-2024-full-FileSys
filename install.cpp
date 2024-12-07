@@ -2,6 +2,8 @@
 #include <string.h>
 #include <iostream>
 #include "file_sys.hpp"
+#include "globals.hpp"
+#include "dEntry.hpp"
 
 void install()
 {

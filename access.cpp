@@ -1,4 +1,7 @@
 #include "file_sys.hpp"
+#include "globals.hpp"
+#include "security.hpp"
+#include "dEntry.hpp"
 
 /**********************************************************************************
 函数：access

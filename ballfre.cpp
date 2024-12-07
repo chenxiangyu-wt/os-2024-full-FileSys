@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cstring>
 #include "file_sys.hpp"
+#include "globals.hpp"
 
 static unsigned int block_buf[BLOCK_SIZE];
 /**********************************************************

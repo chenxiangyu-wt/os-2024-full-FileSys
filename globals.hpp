@@ -1,7 +1,7 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
-#include "permissions.hpp"
+#include "security.hpp"
 #include "file_sys.hpp"
 #include "iNode.hpp"
 

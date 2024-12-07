@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "file_sys.hpp"
+#include "globals.hpp"
+#include "dEntry.hpp"
 /*********************************************************************
 函数：creat
 功能：创建文件，存在且可写则覆盖，否则申请i节点，并打开该文件，返回文件指针

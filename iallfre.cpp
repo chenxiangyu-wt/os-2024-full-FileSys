@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "file_sys.hpp"
+#include "globals.hpp"
 
 static struct DiskINode block_buf[BLOCK_SIZE / DISK_INODE_SIZE]; // 存放i节点的临时数组
 /*****************************************************

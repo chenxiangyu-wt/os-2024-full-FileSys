@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "file_sys.hpp"
+#include "globals.hpp"
+#include "dEntry.hpp"
 
 short open(int user_id, const char *filename, char openmode)
 {

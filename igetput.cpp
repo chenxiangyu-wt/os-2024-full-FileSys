@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "file_sys.hpp"
+#include "globals.hpp"
 
 /* 函数名：	iget 							*/
 /* 作用：	为磁盘i结点分配对应的内存i结点	*/

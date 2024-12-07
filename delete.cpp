@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "file_sys.hpp"
+#include "globals.hpp"
 
 void removeFile(const char *filename)
 {

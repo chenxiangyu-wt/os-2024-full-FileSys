@@ -30,5 +30,12 @@ struct Directory
     DirectoryEntry entries[ENTRYNUM]; // 目录项数组
     unsigned int entry_count;         // 当前目录中的有效项数
 };
-
+extern void _dir();
+extern void mkdir(const char *);
+extern void chdir(const char *);
+extern short open(int, const char *, char);
+extern int creat(unsigned int, const char *, unsigned short);
+extern unsigned int read(int fd, char *buf, unsigned int size);
+extern unsigned int write(int fd, char *buf, unsigned int size);
+extern void removeFile(const char *);
 #endif // FILESYS_HPP

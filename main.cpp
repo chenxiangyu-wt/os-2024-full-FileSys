@@ -3,6 +3,8 @@
 #include "command_line.hpp"
 #include "file_sys.hpp"
 #include "globals.hpp"
+#include "dEntry.hpp"
+#include "security.hpp"
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;

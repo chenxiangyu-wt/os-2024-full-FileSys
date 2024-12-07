@@ -40,4 +40,14 @@ struct MemoryINode
     uint32_t block_addresses[ADDRESS_POINTOR_NUM]; // 数据块地址数组（直接/间接地址）
 };
 
+struct InodeHashTableEntry
+{
+    MemoryINode *prev_inode; /*HASH表指针*/
+};
+extern MemoryINode *iget(unsigned int);
+extern void iput(MemoryINode *);
+extern MemoryINode *ialloc();
+extern void ifree(unsigned int);
+extern int namei(const char *);
+extern unsigned short iname(const char *);
 #endif // INODE_HPP

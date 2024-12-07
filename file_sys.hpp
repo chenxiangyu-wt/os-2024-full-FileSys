@@ -2,10 +2,6 @@
 #define _FILESYS_H
 #include <cstdint>
 
-#include "iNode.hpp"
-#include "permissions.hpp"
-#include "directory.hpp"
-
 // All Defines
 constexpr int BLOCK_SIZE = 512; // Size of each block
 constexpr int SYSOPENFILE = 40;
@@ -46,11 +42,6 @@ struct FileSystem
 	uint8_t superblock_modified_flag; /* 超级块修改标志 */
 };
 
-struct InodeHashTableEntry
-{
-	MemoryINode *prev_inode; /*HASH表指针*/
-};
-
 struct File
 {
 	char flag;					  /* 文件操作标志 */
@@ -59,51 +50,14 @@ struct File
 	unsigned long offset;		  /* 读/写字符指针偏移量 */
 };
 
-struct UserContext
-{
-	unsigned short default_mode;	   /* 默认文件权限模式 */
-	unsigned short user_id;			   /* 用户 ID */
-	unsigned short group_id;		   /* 用户组 ID */
-	unsigned short open_files[NOFILE]; /* 用户打开文件表 */
-};
-
-// all variables
-extern InodeHashTableEntry hinode[NHINO];
-extern Directory dir; /*当前目录(在内存中全部读入)*/
-extern File sys_ofile[SYSOPENFILE];
-extern FileSystem fileSystem; /*内存中的超级块*/
-extern UserPassword pwd[PWDNUM];
-extern UserContext user[USERNUM];
-// extern struct file     *fd;           /*the file system column of all the system*/    //xiao
-extern MemoryINode *cur_path_inode;
-extern int user_id; /* 用户 ID */
-extern char disk[(DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE];
-
 // all functions
-extern MemoryINode *iget(unsigned int);
-extern void iput(MemoryINode *);
 extern unsigned int balloc(unsigned int);
 extern unsigned int balloc();
 extern void bfree(unsigned int);
-extern MemoryINode *ialloc();
-extern void ifree(unsigned int);
-extern int namei(const char *);
-extern unsigned short iname(const char *);
-extern unsigned int access(unsigned int, MemoryINode *, unsigned short);
-extern void _dir();
-extern void mkdir(const char *);
-extern void chdir(const char *);
-extern short open(int, const char *, char);
-extern int creat(unsigned int, const char *, unsigned short);
-extern unsigned int read(int fd, char *buf, unsigned int size);
-extern unsigned int write(int fd, char *buf, unsigned int size);
-int login(unsigned short uid, const char *passwd);
-extern int logout(unsigned short);
+
 extern void install();
 extern void format();
 extern void close(unsigned int, unsigned short);
 extern void halt();
-extern void removeFile(const char *);
-extern int shell(int user_id, char *str);
 
 #endif

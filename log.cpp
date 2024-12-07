@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "file_sys.hpp"
-#include "log.h"
+#include "log.hpp"
+#include "globals.hpp"
 
 int find_user_index(unsigned short uid, const char *passwd)
 {
