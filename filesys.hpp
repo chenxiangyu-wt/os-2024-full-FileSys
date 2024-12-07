@@ -1,56 +1,35 @@
 #ifndef _FILESYS_H
 #define _FILESYS_H
 #include <cstdint>
+
 #include "INode.hpp"
+#include "Permissions.hpp"
 #include "Directory.hpp"
 // #define exit(a)		return			//建议使用 return         by tangfl
 
 // All Defines
-constexpr int BLOCKSIZ = 512; // Size of each block
+constexpr int BLOCK_SIZE = 512; // Size of each block
 constexpr int SYSOPENFILE = 40;
-constexpr int PWDSIZ = 12; // Maximum password length
-constexpr int PWDNUM = 32;
-constexpr int NOFILE = 20; // Maximum number of files a user can open
-constexpr int NHINO = 128; // Hash number, must be power of 2
-constexpr int USERNUM = 10;
-constexpr int DINODESIZ = 52; // Should be 50 bytes, but adjusted to 52 for memory alignment, changed from 32 to 52
+
+constexpr int NHINO = 128;						   // Hash number, must be power of 2
+constexpr int DISK_INODE_SIZE = sizeof(DiskINode); // Should be 50 bytes, but adjusted to 52 for memory alignment, changed from 32 to 52
 
 // File system constants
-constexpr int DINODEBLK = 32;						  // i-node block count
-constexpr int FILEBLK = 512;						  // Data block count
-constexpr int NICFREE = 50;							  // Free block stack size in superblock
-constexpr int NICINOD = 50;							  // Free i-node array size in superblock
-constexpr int DINODESTART = 2 * BLOCKSIZ;			  // i-node start address, leaving 1024 bytes, first for boot, second for superblock
-constexpr int DATASTART = (2 + DINODEBLK) * BLOCKSIZ; // Data area start address
+constexpr int DISK_INODE_AREA_SIZE = 128;									// i-node block count
+constexpr int DATA_BLOCK_AREA_SIZE = 512;									// Data block count
+constexpr int NICFREE = 50;													// Free block stack size in superblock
+constexpr int NICINOD = 50;													// Free i-node array size in superblock
+constexpr int DISK_INODE_START_POINTOR = 2 * BLOCK_SIZE;					// i-node start address, leaving 1024 bytes, first for boot, second for superblock
+constexpr int DATA_START_POINTOR = (2 + DISK_INODE_AREA_SIZE) * BLOCK_SIZE; // Data area start address
+constexpr int DISK_SIZE = (DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE;
 
 // mode constants
-constexpr int DIEMPTY = 00000; // Empty permission
-constexpr int DIFILE = 01000;  // Type: File
-constexpr int DIDIR = 02000;   // Type: Directory
-
-// User permissions
-constexpr int UDIREAD = 00001;
-constexpr int UDIWRITE = 00002;
-constexpr int UDIEXICUTE = 00004;
-
-// Group permissions
-constexpr int GDIREAD = 00010;
-constexpr int GDIWRITE = 00020;
-constexpr int GDIEXICUTE = 00040;
-
-// Public permissions
-constexpr int ODIREAD = 00100;
-constexpr int ODIWRITE = 00200;
-constexpr int ODIEXICUTE = 00400;
 
 constexpr int READ = 1;
 constexpr int WRITE = 2;
 constexpr int EXICUTE = 3;
 
 constexpr int DEFAULTMODE = 00777; // Default permission
-
-// i_flag constants
-constexpr int IUPDATE = 00002;
 
 // s_fmod constants
 constexpr int SUPDATE = 00001;
@@ -67,25 +46,18 @@ constexpr int FAPPEND = 00004;
 // #define SEEK_SET  		0
 struct FileSystem
 {
-	unsigned short inode_block_count;  /* i 节点块块数 */
-	unsigned long data_block_count;	   /* 数据块块数 */
-	unsigned int free_block_count;	   /* 空闲块数 */
-	unsigned short free_block_pointer; /* 空闲块指针 */
-	unsigned int free_blocks[NICFREE]; /* 空闲块堆栈 */
+	uint16_t inode_block_count;	   /* i 节点块块数 */
+	uint64_t data_block_count;	   /* 数据块块数 */
+	uint32_t free_block_count;	   /* 空闲块数 */
+	uint16_t free_block_pointer;   /* 空闲块指针 */
+	uint32_t free_blocks[NICFREE]; /* 空闲块堆栈 */
 
-	unsigned int free_inode_count;	   /* 空闲 i 节点数 */
-	unsigned short free_inode_pointer; /* 空闲 i 节点指针 */
-	unsigned int free_inodes[NICINOD]; /* 空闲 i 节点数组 */
-	unsigned int last_allocated_inode; /* 记录的 i 节点 */
+	uint32_t free_inode_count;	   /* 空闲 i 节点数 */
+	uint16_t free_inode_pointer;   /* 空闲 i 节点指针 */
+	uint32_t free_inodes[NICINOD]; /* 空闲 i 节点数组 */
+	uint32_t last_allocated_inode; /* 记录的 i 节点 */
 
-	char superblock_modified_flag; /* 超级块修改标志 */
-};
-
-struct UserPassword
-{
-	unsigned short user_id;	 // 用户 ID
-	unsigned short group_id; // 组 ID
-	char password[PWDSIZ];	 // 用户密码
+	uint8_t superblock_modified_flag; /* 超级块修改标志 */
 };
 
 struct InodeHashTableEntry
@@ -119,7 +91,7 @@ extern UserContext user[USERNUM];
 // extern struct file     *fd;           /*the file system column of all the system*/    //xiao
 extern MemoryINode *cur_path_inode;
 extern int user_id; /* 用户 ID */
-extern char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
+extern char disk[(DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE];
 
 // all functions
 extern MemoryINode *iget(unsigned int);

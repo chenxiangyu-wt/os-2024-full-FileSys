@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "filesys.h"
+#include "filesys.hpp"
 
 void removeFile(const char *filename)
 {

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
-#include "filesys.h"
+#include "filesys.hpp"
 
 void _dir()
 {
@@ -56,7 +56,7 @@ void mkdir(const char *dirname)
 {
 	int dirid, dirpos;
 	MemoryINode *inode;
-	DirectoryEntry buf[BLOCKSIZ / (sizeof(DirectoryEntry))];
+	DirectoryEntry buf[BLOCK_SIZE / (sizeof(DirectoryEntry))];
 	unsigned int block;
 
 	dirid = namei(dirname);
@@ -81,7 +81,7 @@ void mkdir(const char *dirname)
 	buf[1].inode_number = inode->status_flag; // 子目录的本目录 子目录
 
 	block = balloc();
-	memcpy(disk + DATASTART + block * BLOCKSIZ, buf, BLOCKSIZ);
+	memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, buf, BLOCK_SIZE);
 
 	inode->file_size = 2 * (sizeof(DirectoryEntry));
 	inode->reference_count = 1;
@@ -117,35 +117,35 @@ void chdir(const char *dirname)
 	{
 		if (dir.entries[i].inode_number == 0)
 		{
-			for (j = ENTRYNAMELEN - 1; j >= 0 && dir.entries[j].inode_number == 0; j--)
+			for (j = ENTRY_NAME_LEN - 1; j >= 0 && dir.entries[j].inode_number == 0; j--)
 				;
 			memcpy(&dir.entries[i], &dir.entries[j], sizeof(DirectoryEntry)); // xiao
 			dir.entries[j].inode_number = 0;
 		}
 	}
-	j = cur_path_inode->file_size % BLOCKSIZ ? 1 : 0;
-	for (unsigned short i = 0; i < cur_path_inode->file_size / BLOCKSIZ + j; i++)
+	j = cur_path_inode->file_size % BLOCK_SIZE ? 1 : 0;
+	for (unsigned short i = 0; i < cur_path_inode->file_size / BLOCK_SIZE + j; i++)
 	{
 		bfree(cur_path_inode->block_addresses[i]);
 	}
-	for (unsigned int i = 0; i < dir.entry_count; i += BLOCKSIZ / (sizeof(DirectoryEntry)))
+	for (unsigned int i = 0; i < dir.entry_count; i += BLOCK_SIZE / (sizeof(DirectoryEntry)))
 	{
 		block = balloc();
 		cur_path_inode->block_addresses[i] = block;
-		memcpy(disk + DATASTART + block * BLOCKSIZ, &dir.entries[i], BLOCKSIZ);
+		memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, &dir.entries[i], BLOCK_SIZE);
 	}
 	cur_path_inode->file_size = dir.entry_count * (sizeof(DirectoryEntry));
 	iput(cur_path_inode);
 	cur_path_inode = inode;
 
 	j = 0;
-	for (unsigned short i = 0; i < inode->file_size / BLOCKSIZ + 1; i++)
+	for (unsigned short i = 0; i < inode->file_size / BLOCK_SIZE + 1; i++)
 	{
-		memcpy(&dir.entries[j], disk + DATASTART + inode->block_addresses[i] * BLOCKSIZ, BLOCKSIZ);
-		j += BLOCKSIZ / (sizeof(DirectoryEntry));
+		memcpy(&dir.entries[j], disk + DATA_START_POINTOR + inode->block_addresses[i] * BLOCK_SIZE, BLOCK_SIZE);
+		j += BLOCK_SIZE / (sizeof(DirectoryEntry));
 	}
 	dir.entry_count = cur_path_inode->file_size / (sizeof(DirectoryEntry));
-	for (unsigned int i = dir.entry_count; i < ENTRYNAMELEN; i++)
+	for (unsigned int i = dir.entry_count; i < ENTRY_NAME_LEN; i++)
 	{
 		dir.entries[i].inode_number = 0;
 	}

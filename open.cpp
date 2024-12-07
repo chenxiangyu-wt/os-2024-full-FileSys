@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "filesys.h"
+#include "filesys.hpp"
 
 short open(int user_id, const char *filename, char openmode)
 {
@@ -71,8 +71,8 @@ short open(int user_id, const char *filename, char openmode)
 
 	if (openmode & FWRITE)
 	{
-		k = inode->file_size % BLOCKSIZ ? 1 : 0;
-		for (i = 0; i < inode->file_size / BLOCKSIZ + k; i++)
+		k = inode->file_size % BLOCK_SIZE ? 1 : 0;
+		for (i = 0; i < inode->file_size / BLOCK_SIZE + k; i++)
 			bfree(inode->block_addresses[i]);
 		inode->file_size = 0;
 	}

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <cstring>
-#include "filesys.h"
+#include "filesys.hpp"
 
 unsigned int read(int fd, char *buf, unsigned int size)
 {
@@ -21,24 +21,24 @@ unsigned int read(int fd, char *buf, unsigned int size)
 	{
 		size = inode->file_size - off;
 	}
-	block_off = off % BLOCKSIZ;
-	block = off / BLOCKSIZ;
-	if (block_off + size < BLOCKSIZ)
+	block_off = off % BLOCK_SIZE;
+	block = off / BLOCK_SIZE;
+	if (block_off + size < BLOCK_SIZE)
 	{
-		memcpy(buf, disk + DATASTART + inode->block_addresses[block] * BLOCKSIZ + block_off, size);
+		memcpy(buf, disk + DATA_START_POINTOR + inode->block_addresses[block] * BLOCK_SIZE + block_off, size);
 		return size;
 	}
-	memcpy(temp_buf, disk + DATASTART + inode->block_addresses[block] * BLOCKSIZ + block_off, BLOCKSIZ - block_off);
-	temp_buf += BLOCKSIZ - block_off;
-	j = (inode->file_size - off - block_off) / BLOCKSIZ;
-	for (i = 0; i < (size - (BLOCKSIZ - block_off)) / BLOCKSIZ; i++)
+	memcpy(temp_buf, disk + DATA_START_POINTOR + inode->block_addresses[block] * BLOCK_SIZE + block_off, BLOCK_SIZE - block_off);
+	temp_buf += BLOCK_SIZE - block_off;
+	j = (inode->file_size - off - block_off) / BLOCK_SIZE;
+	for (i = 0; i < (size - (BLOCK_SIZE - block_off)) / BLOCK_SIZE; i++)
 	{
-		memcpy(temp_buf, disk + DATASTART + inode->block_addresses[j + i] * BLOCKSIZ, BLOCKSIZ);
-		temp_buf += BLOCKSIZ;
+		memcpy(temp_buf, disk + DATA_START_POINTOR + inode->block_addresses[j + i] * BLOCK_SIZE, BLOCK_SIZE);
+		temp_buf += BLOCK_SIZE;
 	}
 
-	block_off = (size - (BLOCKSIZ - block_off)) % BLOCKSIZ;
-	memcpy(temp_buf, disk + DATASTART + i * BLOCKSIZ, block_off);
+	block_off = (size - (BLOCK_SIZE - block_off)) % BLOCK_SIZE;
+	memcpy(temp_buf, disk + DATA_START_POINTOR + i * BLOCK_SIZE, block_off);
 	sys_ofile[user[user_id].open_files[fd]].offset += size;
 	return size;
 }
@@ -58,20 +58,20 @@ unsigned int write(int fd, char *buf, unsigned int size)
 	}
 	// add by liwen to check the filesize and alloc the BLOCK
 	off = sys_ofile[user[user_id].open_files[fd]].offset;
-	block = ((off + size) - inode->file_size) / BLOCKSIZ; // ÉÐÐè¸öÊý
-	if (((off + size) - inode->file_size) % BLOCKSIZ)
+	block = ((off + size) - inode->file_size) / BLOCK_SIZE; // ÉÐÐè¸öÊý
+	if (((off + size) - inode->file_size) % BLOCK_SIZE)
 		block++;
 	if (fileSystem.free_block_count < block)
 	{
 		printf("Not enough space to write so much bytes!\n");
 		return 0;
 	}
-	j = inode->file_size / BLOCKSIZ;
-	if (inode->file_size % BLOCKSIZ)
+	j = inode->file_size / BLOCK_SIZE;
+	if (inode->file_size % BLOCK_SIZE)
 	{
 		j++;
 	}
-	if (j + block > NADDR)
+	if (j + block > ADDRESS_POINTOR_NUM)
 	{
 		printf("To write so much bytes will exceed the file limit!!\n");
 		return 0;
@@ -85,24 +85,24 @@ unsigned int write(int fd, char *buf, unsigned int size)
 	temp_buf = buf;
 
 	off = sys_ofile[user[user_id].open_files[fd]].offset;
-	block_off = off % BLOCKSIZ;
-	block = off / BLOCKSIZ;
+	block_off = off % BLOCK_SIZE;
+	block = off / BLOCK_SIZE;
 
-	if (block_off + size < BLOCKSIZ)
+	if (block_off + size < BLOCK_SIZE)
 	{
-		memcpy(disk + DATASTART + inode->block_addresses[block] * BLOCKSIZ + block_off, buf, size);
+		memcpy(disk + DATA_START_POINTOR + inode->block_addresses[block] * BLOCK_SIZE + block_off, buf, size);
 		return size;
 	}
-	memcpy(disk + DATASTART + inode->block_addresses[block] * BLOCKSIZ + block_off, temp_buf, BLOCKSIZ - block_off);
+	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[block] * BLOCK_SIZE + block_off, temp_buf, BLOCK_SIZE - block_off);
 
-	temp_buf += BLOCKSIZ - block_off;
-	for (i = 0; i < (size - (BLOCKSIZ - block_off)) / BLOCKSIZ; i++)
+	temp_buf += BLOCK_SIZE - block_off;
+	for (i = 0; i < (size - (BLOCK_SIZE - block_off)) / BLOCK_SIZE; i++)
 	{
-		memcpy(disk + DATASTART + inode->block_addresses[block + 1 + i] * BLOCKSIZ, temp_buf, BLOCKSIZ);
-		temp_buf += BLOCKSIZ;
+		memcpy(disk + DATA_START_POINTOR + inode->block_addresses[block + 1 + i] * BLOCK_SIZE, temp_buf, BLOCK_SIZE);
+		temp_buf += BLOCK_SIZE;
 	}
-	block_off = (size - (BLOCKSIZ - block_off)) % BLOCKSIZ;
-	memcpy(disk + DATASTART + block * BLOCKSIZ, temp_buf, block_off);
+	block_off = (size - (BLOCK_SIZE - block_off)) % BLOCK_SIZE;
+	memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, temp_buf, block_off);
 	sys_ofile[user[user_id].open_files[fd]].offset += size;
 	return size;
 }

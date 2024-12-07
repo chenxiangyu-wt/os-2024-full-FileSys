@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "filesys.h"
+#include "filesys.hpp"
 
 /* 函数名：	iget 							*/
 /* 作用：	为磁盘i结点分配对应的内存i结点	*/
@@ -34,13 +34,13 @@ MemoryINode *iget(unsigned int dinodeid)
 
 	/* 若没有找到 */
 	/* 1. 计算该磁盘i结点在文件卷中的位置 */
-	addr = DINODESTART + dinodeid * DINODESIZ;
+	addr = DISK_INODE_START_POINTOR + dinodeid * DISK_INODE_SIZE;
 
 	/* 2. 分配一个内存i结点 */
 	newinode = (struct MemoryINode *)malloc(sizeof(MemoryINode));
 
 	/* 3. 用磁盘i结点初始化内存i结点 */
-	memcpy(&(newinode->reference_count), disk + addr, DINODESIZ);
+	memcpy(&(newinode->reference_count), disk + addr, DISK_INODE_SIZE);
 
 	/* 4. 将内存i结点链入相应的哈希队列里*/
 	newinode->prev = hinode[inodeid].prev_inode;
@@ -77,13 +77,13 @@ void iput(struct MemoryINode *pinode)
 		if (pinode->reference_count != 0) // 若联结计数不为0
 		{
 			/* 把内存i结点的内容写回磁盘i结点 */
-			addr = DINODESTART + pinode->status_flag * DINODESIZ;
-			memcpy(disk + addr, &pinode->reference_count, DINODESIZ);
+			addr = DISK_INODE_START_POINTOR + pinode->status_flag * DISK_INODE_SIZE;
+			memcpy(disk + addr, &pinode->reference_count, DISK_INODE_SIZE);
 		}
 		else
 		{
 			/* 删除磁盘i结点和文件对应的物理块 */
-			block_num = pinode->file_size / BLOCKSIZ;
+			block_num = pinode->file_size / BLOCK_SIZE;
 			for (unsigned int i = 0; i < block_num; i++)
 				bfree(pinode->block_addresses[i]);
 			ifree(pinode->status_flag);

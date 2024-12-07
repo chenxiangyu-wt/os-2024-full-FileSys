@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "filesys.h"
+#include "filesys.hpp"
 /*********************************************************************
 函数：creat
 功能：创建文件，存在且可写则覆盖，否则申请i节点，并打开该文件，返回文件指针
@@ -25,7 +25,7 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 			return -1;
 		}
 		j = inode->file_size % 512 ? 1 : 0;
-		for (i = 0; i < inode->file_size / BLOCKSIZ + j; i++)
+		for (i = 0; i < inode->file_size / BLOCK_SIZE + j; i++)
 			bfree(inode->block_addresses[i]);
 
 		for (i = 0; i < SYSOPENFILE; i++)

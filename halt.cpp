@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "filesys.h"
+#include "filesys.hpp"
 
 void halt()
 {
@@ -28,7 +28,7 @@ void halt()
 	} // for
 
 	/*3. write back the filesys to the disk*/
-	memcpy(disk + BLOCKSIZ, &fileSystem, sizeof(FileSystem));
+	memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem));
 
 	/*4. close the file system column*/
 

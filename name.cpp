@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "filesys.h"
+#include "filesys.hpp"
 /*
 namei函数：参数：要查找的文件名。返回文件对应的内存目录项标号i；如果返回-1表示没有该文件。
 功能：查找文件在当前目录下对应的内存目录项的号；
@@ -9,7 +9,7 @@ int namei(const char *name)
 {
 	int i;
 
-	for (i = 0; i < ENTRYNAMELEN; i++)
+	for (i = 0; i < ENTRY_NAME_LEN; i++)
 	{
 		if ((!strcmp(dir.entries[i].name, name)) && (dir.entries[i].inode_number != 0)) // 名字匹配且目录项有效；
 		{
@@ -27,7 +27,7 @@ unsigned short iname(const char *name)
 {
 	int i, notfound = 1;
 
-	for (i = 0; ((i < ENTRYNAMELEN) && (notfound)); i++)
+	for (i = 0; ((i < ENTRY_NAME_LEN) && (notfound)); i++)
 	{
 		if (dir.entries[i].inode_number == 0) // 该目录项未分配。
 		{

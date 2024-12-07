@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "filesys.h"
+#include "filesys.hpp"
 #include "log.h"
 
 int find_user_index(unsigned short uid, const char *passwd)

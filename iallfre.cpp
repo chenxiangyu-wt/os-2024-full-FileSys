@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include "filesys.h"
+#include "filesys.hpp"
 
-static struct DiskINode block_buf[BLOCKSIZ / DINODESIZ]; // 存放i节点的临时数组
+static struct DiskINode block_buf[BLOCK_SIZE / DISK_INODE_SIZE]; // 存放i节点的临时数组
 /*****************************************************
 函数：ialloc
 功能：分配磁盘i节点，返回相应的内存i节点指针
@@ -24,7 +24,7 @@ struct MemoryINode *ialloc()
 		{ // 空闲i节点数组没有装满且磁盘中还有空闲i节点
 			if (block_end_flag)
 			{
-				memcpy(block_buf, disk + DINODESTART + cur_di * DINODESIZ, BLOCKSIZ); // 从i节点去中读一个盘块到临时数组
+				memcpy(block_buf, disk + DISK_INODE_START_POINTOR + cur_di * DISK_INODE_SIZE, BLOCK_SIZE); // 从i节点去中读一个盘块到临时数组
 				block_end_flag = 0;
 				i = 0;
 			}
@@ -44,7 +44,7 @@ struct MemoryINode *ialloc()
 	}
 	/*分配空闲i节点*/
 	temp_inode = iget(fileSystem.free_inodes[fileSystem.free_inode_pointer]);
-	memcpy(disk + DINODESTART + fileSystem.free_inodes[fileSystem.free_inode_pointer] * DINODESIZ,
+	memcpy(disk + DISK_INODE_START_POINTOR + fileSystem.free_inodes[fileSystem.free_inode_pointer] * DISK_INODE_SIZE,
 		   &temp_inode->reference_count, sizeof(struct DiskINode));
 	fileSystem.free_inode_pointer++;
 	fileSystem.free_inode_count--;

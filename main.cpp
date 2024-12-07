@@ -1,5 +1,5 @@
 #include <iostream>
-#include "filesys.h"
+#include "filesys.hpp"
 #include "CommandLine.hpp"
 
 InodeHashTableEntry hinode[NHINO];
@@ -10,7 +10,7 @@ UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
 MemoryINode *cur_path_inode;
 int user_id;
-char disk[(DINODEBLK + FILEBLK + 2) * BLOCKSIZ];
+char disk[(DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE];
 char str[100];
 
 int main()
@@ -24,14 +24,14 @@ int main()
 
 	printf("Welcome to mini filesystem!\n");
 
-	while (user_id == -1)
-	{
-		printf("Login: ");
-		scanf("%d", &username);
-		printf("Password: ");
-		scanf("%s", password);
-		user_id = login(username, password);
-	}
+	// while (user_id == -1)
+	// {
+	// 	printf("Login: ");
+	// 	scanf("%d", &username);
+	// 	printf("Password: ");
+	// 	scanf("%s", password);
+	// 	user_id = login(username, password);
+	// }
 
 	CommandLine commandLine;
 
