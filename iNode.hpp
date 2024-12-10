@@ -44,10 +44,10 @@ struct InodeHashTableEntry
 {
     MemoryINode *prev_inode; /*HASH表指针*/
 };
-extern MemoryINode *iget(unsigned int);
+extern MemoryINode *iget(uint32_t);
 extern void iput(MemoryINode *);
 extern MemoryINode *ialloc();
-extern void ifree(unsigned int);
+extern void ifree(uint32_t);
 extern int namei(const char *);
-extern unsigned short iname(const char *);
+extern uint_16 iname(const char *);
 #endif // INODE_HPP

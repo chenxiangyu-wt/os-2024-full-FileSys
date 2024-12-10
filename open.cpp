@@ -4,7 +4,7 @@
 
 short open(int user_id, const char *filename, char openmode)
 {
-	unsigned int dinodeid;
+	uint32_t dinodeid;
 	struct MemoryINode *inode;
 	uint32_t i, j, k;
 

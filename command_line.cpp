@@ -99,7 +99,7 @@ int CommandLine::cmdMkfile(const std::vector<std::string> &args)
         return 1;
     }
     std::string filename = args[1];
-    unsigned short mode = DEFAULTMODE;
+    uint_16 mode = DEFAULTMODE;
     if (args.size() > 2)
     {
         sscanf(args[2].c_str(), "%ho", &mode);
@@ -136,7 +136,7 @@ int CommandLine::cmdWrite(const std::vector<std::string> &args)
         return 1;
     }
     std::string filename = args[1];
-    unsigned int size = std::stoi(args[2]);
+    uint32_t size = std::stoi(args[2]);
     short mode = WRITE;
 
     int fd = open(0, filename.c_str(), (char)mode);
@@ -162,7 +162,7 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
         return 1;
     }
     std::string filename = args[1];
-    unsigned int size = std::stoi(args[2]);
+    uint32_t size = std::stoi(args[2]);
 
     int fd = open(0, filename.c_str(), READ);
     if (fd == -1)

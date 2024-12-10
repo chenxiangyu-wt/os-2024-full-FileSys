@@ -25,21 +25,21 @@ constexpr int DEFAULTMODE = 00777; // Default permission
 
 struct UserPassword
 {
-    unsigned short user_id;  // 用户 ID
-    unsigned short group_id; // 组 ID
-    char password[PWDSIZ];   // 用户密码
+    uint_16 user_id;       // 用户 ID
+    uint_16 group_id;      // 组 ID
+    char password[PWDSIZ]; // 用户密码
 };
 
 struct UserContext
 {
-    unsigned short default_mode;       /* 默认文件权限模式 */
-    unsigned short user_id;            /* 用户 ID */
-    unsigned short group_id;           /* 用户组 ID */
-    unsigned short open_files[NOFILE]; /* 用户打开文件表 */
+    uint_16 default_mode;       /* 默认文件权限模式 */
+    uint_16 user_id;            /* 用户 ID */
+    uint_16 group_id;           /* 用户组 ID */
+    uint_16 open_files[NOFILE]; /* 用户打开文件表 */
 };
 
-extern unsigned int access(unsigned int, MemoryINode *, unsigned short);
-int login(unsigned short uid, const char *passwd);
-extern int logout(unsigned short);
+extern uint32_t access(uint32_t, MemoryINode *, uint_16);
+int login(uint_16 uid, const char *passwd);
+extern int logout(uint_16);
 
 #endif // PERMISSIONS_HPP

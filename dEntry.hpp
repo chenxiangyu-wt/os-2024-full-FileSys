@@ -21,21 +21,21 @@ constexpr int EXICUTE = 3;
 struct DirectoryEntry
 {
     char name[ENTRY_NAME_LEN]; // 文件或目录名称
-    unsigned int inode_number; // i 节点编号
+    uint32_t inode_number;     // i 节点编号
     uint8_t type;              // 文件类型
 };
 
 struct Directory
 {
     DirectoryEntry entries[ENTRYNUM]; // 目录项数组
-    unsigned int entry_count;         // 当前目录中的有效项数
+    uint32_t entry_count;             // 当前目录中的有效项数
 };
 extern void _dir();
 extern void mkdir(const char *);
 extern void chdir(const char *);
 extern short open(int, const char *, char);
-extern int creat(unsigned int, const char *, unsigned short);
-extern unsigned int read(int fd, char *buf, unsigned int size);
-extern unsigned int write(int fd, char *buf, unsigned int size);
+extern int creat(uint32_t, const char *, uint_16);
+extern uint32_t read(int fd, char *buf, uint32_t size);
+extern uint32_t write(int fd, char *buf, uint32_t size);
 extern void removeFile(const char *);
 #endif // FILESYS_HPP

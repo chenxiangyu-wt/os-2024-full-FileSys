@@ -3,10 +3,10 @@
 #include "file_sys.hpp"
 #include "globals.hpp"
 
-unsigned int read(int fd, char *buf, unsigned int size)
+uint32_t read(int fd, char *buf, uint32_t size)
 {
 	unsigned long off;
-	unsigned int block, block_off, i, j;
+	uint32_t block, block_off, i, j;
 	struct MemoryINode *inode;
 	char *temp_buf;
 
@@ -44,10 +44,10 @@ unsigned int read(int fd, char *buf, unsigned int size)
 	return size;
 }
 
-unsigned int write(int fd, char *buf, unsigned int size)
+uint32_t write(int fd, char *buf, uint32_t size)
 {
 	unsigned long off;
-	unsigned int block, block_off, i, j;
+	uint32_t block, block_off, i, j;
 	struct MemoryINode *inode;
 	char *temp_buf;
 

@@ -25,7 +25,7 @@ iname函数：功能：如果还有空目录项，为当前文件分配目录项
 		   参数：将要分配的文件名。
 		   返回：0没有空闲目录项；i分配的目录项号。
 */
-unsigned short iname(const char *name)
+uint_16 iname(const char *name)
 {
 	int i, notfound = 1;
 

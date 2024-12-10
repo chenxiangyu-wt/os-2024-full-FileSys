@@ -1,103 +1,104 @@
-#include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
-#include "file_sys.hpp"
 #include "globals.hpp"
 
-void initialize_password_file()
+void format()
 {
-	UserPassword passwd[32];
-	passwd[0].user_id = 2116;
-	passwd[0].group_id = 03;
-	strcpy(passwd[0].password, "dddd");
+	MemoryINode *inode;
+	uint32_t PASSWORD_FILE_LIMITE = 32;
+	DirectoryEntry dir_buf[BLOCK_SIZE / sizeof(DirectoryEntry)];
+	UserPassword passwd[PASSWORD_FILE_LIMITE];
+	uint32_t block_buf[BLOCK_SIZE / sizeof(int)];
 
-	passwd[1].user_id = 2117;
-	passwd[1].group_id = 03;
-	strcpy(passwd[1].password, "bbbb");
+	// 1. 初始化磁盘
+	memset(disk, 0, DISK_SIZE); // 将整个磁盘清零
 
-	passwd[2].user_id = 2118;
-	passwd[2].group_id = 04;
-	strcpy(passwd[2].password, "abcd");
+	// 2. 初始化密码文件内容
+	memset(passwd, 0, sizeof(passwd));
+	passwd[0] = {2116, 3, "dddd"};
+	passwd[1] = {2117, 3, "bbbb"};
+	passwd[2] = {2118, 4, "abcd"};
+	passwd[3] = {2119, 4, "cccc"};
+	passwd[4] = {2120, 5, "eeee"};
 
-	passwd[3].user_id = 2119;
-	passwd[3].group_id = 04;
-	strcpy(passwd[3].password, "cccc");
-
-	passwd[4].user_id = 2120;
-	passwd[4].group_id = 05;
-	strcpy(passwd[4].password, "eeee");
-
-	for (int i = 5; i < PWDNUM; i++)
+	for (int i = 5; i < PASSWORD_FILE_LIMITE; i++)
 	{
 		passwd[i].user_id = 0;
 		passwd[i].group_id = 0;
-		strcpy(passwd[i].password, "            "); // PWDSIZ " "
+		memset(passwd[i].password, ' ', PWDSIZ);
 	}
 
-	memcpy(pwd, passwd, 32 * sizeof(struct UserPassword));
-	memcpy(disk + DATA_START_POINTOR + BLOCK_SIZE * 2, passwd, BLOCK_SIZE);
-}
-void initialize_root_directory()
-{
-	DirectoryEntry dir_buf[BLOCK_SIZE / (sizeof(DirectoryEntry))];
+	// 3. 初始化超级块 (FileSystem)
+	fileSystem.inode_block_count = DISK_INODE_AREA_SIZE;
+	fileSystem.data_block_count = DATA_BLOCK_AREA_SIZE;
+
+	fileSystem.free_inode_count = (DISK_INODE_AREA_SIZE * BLOCK_SIZE) / DISK_INODE_SIZE - 4; // 前 4 个已使用
+	fileSystem.free_block_count = DATA_BLOCK_AREA_SIZE - 3;									 // 数据区保留了 3 块
+
+	// 初始化空闲 i-node 数组
+	for (int i = 0; i < NICINOD; i++)
+	{
+		fileSystem.free_inodes[i] = i + 4; // 从 i-node 4 开始
+	}
+	fileSystem.free_inode_pointer = 0;
+	fileSystem.last_allocated_inode = NICINOD + 4;
+
+	// 初始化空闲块栈
+	int block_index = DATA_BLOCK_AREA_SIZE - 1;
+	for (int i = 0; i < NICFREE; i++)
+	{
+		fileSystem.free_blocks[i] = block_index--;
+	}
+	fileSystem.free_block_pointer = 0;
+
+	// 4. 创建根目录 (inode 1)
+	inode = iget(1);
+	inode->mode = DIDIR | 0755; // 目录模式
+	inode->file_size = 3 * sizeof(DirectoryEntry);
+	inode->reference_count = 1;
+	inode->block_addresses[0] = balloc();
+
+	memset(dir_buf, 0, sizeof(dir_buf));
 	strcpy(dir_buf[0].name, "..");
 	dir_buf[0].inode_number = 1;
 	strcpy(dir_buf[1].name, ".");
 	dir_buf[1].inode_number = 1;
 	strcpy(dir_buf[2].name, "etc");
 	dir_buf[2].inode_number = 2;
-	memcpy(disk + DATA_START_POINTOR, &dir_buf, 3 * (sizeof(DirectoryEntry)));
-}
-void initialize_superblock()
-{
 
-	fileSystem.inode_block_count = DISK_INODE_AREA_SIZE;
-	fileSystem.data_block_count = DATA_BLOCK_AREA_SIZE;
+	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
+	iput(inode);
 
-	fileSystem.free_inode_count = DISK_INODE_AREA_SIZE * BLOCK_SIZE / DISK_INODE_SIZE - 4;
-	fileSystem.free_block_count = DATA_BLOCK_AREA_SIZE - 3;
+	// 5. 创建 `etc` 目录 (inode 2)
+	inode = iget(2);
+	inode->mode = DIDIR | 0755;
+	inode->file_size = 3 * sizeof(DirectoryEntry);
+	inode->reference_count = 1;
+	inode->block_addresses[0] = balloc();
 
-	for (int i = 0; i < NICINOD; i++)
-	{
-		/* begin with 4,    0,1,2,3, is used by main,etc,password */
-		fileSystem.free_inodes[i] = 4 + i;
-	}
+	memset(dir_buf, 0, sizeof(dir_buf));
+	strcpy(dir_buf[0].name, "..");
+	dir_buf[0].inode_number = 1;
+	strcpy(dir_buf[1].name, ".");
+	dir_buf[1].inode_number = 2;
+	strcpy(dir_buf[2].name, "password");
+	dir_buf[2].inode_number = 3;
 
-	fileSystem.free_inode_pointer = 0;
-	fileSystem.last_allocated_inode = NICINOD + 4;
+	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
+	iput(inode);
 
-	unsigned int block_buf[BLOCK_SIZE / sizeof(int)];
-	block_buf[NICFREE - 1] = DATA_BLOCK_AREA_SIZE + 1; /*FILEBLK+1 is a flag of end*/
-	for (int i = 0; i < NICFREE - 1; i++)
-	{
-		block_buf[NICFREE - 2 - i] = DATA_BLOCK_AREA_SIZE - i - 1; // 从最后一个数据块开始分配??????
-	}
+	// 6. 创建 `password` 文件 (inode 3)
+	inode = iget(3);
+	inode->mode = DIFILE | 0644; // 文件模式
+	inode->file_size = BLOCK_SIZE;
+	inode->reference_count = 1;
+	inode->block_addresses[0] = balloc();
 
-	memcpy(disk + DATA_START_POINTOR + BLOCK_SIZE * (DATA_BLOCK_AREA_SIZE - NICFREE), block_buf, BLOCK_SIZE);
-	int i, j;
-	for (i = DATA_BLOCK_AREA_SIZE - 2 * NICFREE + 1; i > 2; i -= NICFREE)
-	{
-		for (j = 0; j < NICFREE; j++)
-		{
-			block_buf[j] = i + j;
-		}
-		memcpy(disk + DATA_START_POINTOR + BLOCK_SIZE * (i - 1), block_buf, BLOCK_SIZE);
-	}
-	i += NICFREE;
-	j = 1;
-	for (; i > 3; i--)
-	{
-		fileSystem.free_blocks[NICFREE - j] = i - 1;
-		j++;
-	}
+	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, BLOCK_SIZE);
+	iput(inode);
 
-	fileSystem.free_block_pointer = NICFREE - j + 1;
+	// 7. 将超级块写入磁盘
 	memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem));
-}
 
-void format()
-{
-	initialize_superblock();
-	initialize_password_file();
-	initialize_root_directory();
+	std::cout << "Format completed. File system initialized." << std::endl;
 }

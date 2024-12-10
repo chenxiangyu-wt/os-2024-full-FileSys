@@ -1,10 +1,10 @@
 #include <iostream>
-#include "file_sys.hpp"
+#include <iomanip>
+#include <cstdint>
 #include "command_line.hpp"
 #include "file_sys.hpp"
 #include "globals.hpp"
-#include "dEntry.hpp"
-#include "security.hpp"
+#include "utils.hpp"
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;
@@ -15,17 +15,15 @@ UserContext user[USERNUM];
 MemoryINode *cur_path_inode;
 
 int user_id;
-char disk[(DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE];
-char str[100];
-
+uint8_t disk[DISK_SIZE];
 int main()
 {
 	int username;
 	char password[16];
 	user_id = -1;
-
 	format();
 	install();
+	printDisk();
 
 	printf("Welcome to mini filesystem!\n");
 

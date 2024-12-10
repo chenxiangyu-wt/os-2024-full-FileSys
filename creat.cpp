@@ -6,7 +6,7 @@
 函数：creat
 功能：创建文件，存在且可写则覆盖，否则申请i节点，并打开该文件，返回文件指针
 **********************************************************************/
-int creat(unsigned int user_id, const char *filename, unsigned short mode)
+int creat(uint32_t user_id, const char *filename, uint_16 mode)
 {
 	struct MemoryINode *inode;
 	int dirid, di_ith;

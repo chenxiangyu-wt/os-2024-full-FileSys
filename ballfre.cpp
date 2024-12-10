@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <cstring>
+#include <cstdint>
 #include "file_sys.hpp"
 #include "globals.hpp"
 
-static unsigned int block_buf[BLOCK_SIZE];
+static uint32_t block_buf[BLOCK_SIZE];
 /**********************************************************
 函数：balloc
 功能：维护超级块中的空闲数据栈，分配空闲数据块，并返回其块号
 ***********************************************************/
-unsigned int balloc()
+uint32_t balloc()
 {
-	unsigned int free_block;
+	uint32_t free_block;
 	int i;
 
 	// 如果没有空闲盘块
@@ -37,7 +38,7 @@ unsigned int balloc()
 	return free_block;
 }
 
-void bfree(unsigned int block_num)
+void bfree(uint32_t block_num)
 {
 	int i;
 

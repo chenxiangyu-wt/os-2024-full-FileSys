@@ -8,7 +8,7 @@
 /* 作用：	为磁盘i结点分配对应的内存i结点	*/
 /* 参数:	待分配的磁盘i结点号				*/
 /* 返回值：	指向对应的内存i结点的指针		*/
-MemoryINode *iget(unsigned int dinodeid)
+MemoryINode *iget(uint32_t dinodeid)
 {
 	int existed = 0, inodeid;
 	long addr;
@@ -65,7 +65,7 @@ MemoryINode *iget(unsigned int dinodeid)
 void iput(struct MemoryINode *pinode)
 {
 	long addr;
-	unsigned int block_num;
+	uint32_t block_num;
 
 	if (pinode->reference_count > 1) // 若引用计数>1
 	{
@@ -85,7 +85,7 @@ void iput(struct MemoryINode *pinode)
 		{
 			/* 删除磁盘i结点和文件对应的物理块 */
 			block_num = pinode->file_size / BLOCK_SIZE;
-			for (unsigned int i = 0; i < block_num; i++)
+			for (uint32_t i = 0; i < block_num; i++)
 				bfree(pinode->block_addresses[i]);
 			ifree(pinode->status_flag);
 		}

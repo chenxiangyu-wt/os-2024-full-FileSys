@@ -1,9 +1,9 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
+#include <cstdint> // 添加头文件，确保 uint8_t 可用
 #include "file_sys.hpp"
 #include "security.hpp"
-#include "file_sys.hpp"
 #include "iNode.hpp"
 #include "dEntry.hpp"
 
@@ -11,12 +11,12 @@
 extern InodeHashTableEntry hinode[NHINO];
 
 // 当前目录
-extern Directory dir; /* 当前目录 (在内存中全部读入) */
+extern Directory dir;
 
 // 系统打开文件表
 extern File sys_ofile[SYSOPENFILE];
 
-// 超级块（文件系统元数据）
+// 超级块
 extern FileSystem fileSystem;
 
 // 用户密码信息
@@ -32,6 +32,6 @@ extern MemoryINode *cur_path_inode;
 extern int user_id;
 
 // 模拟磁盘的内存区域
-extern char disk[(DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE];
+extern uint8_t disk[DISK_SIZE]; // 修改为 uint8_t 类型
 
 #endif // GLOBALS_HPP

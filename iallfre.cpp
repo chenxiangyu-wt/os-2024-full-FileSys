@@ -11,7 +11,7 @@ static struct DiskINode block_buf[BLOCK_SIZE / DISK_INODE_SIZE]; // 存放i节�
 struct MemoryINode *ialloc()
 {
 	struct MemoryINode *temp_inode;
-	unsigned int cur_di;
+	uint32_t cur_di;
 	int i, count, block_end_flag;
 
 	// I界点分配时从低位到高位使用，并且分配的i节点也是由低到高
@@ -53,7 +53,7 @@ struct MemoryINode *ialloc()
 	return temp_inode;
 }
 
-void ifree(unsigned int dinodeid)
+void ifree(uint32_t dinodeid)
 {
 	fileSystem.free_inode_count--; // 空闲i节点数减一
 	if (fileSystem.free_inode_pointer != 0)

@@ -6,14 +6,14 @@
 #include "security.hpp"
 
 // All Defines
-constexpr int BLOCK_SIZE = 512; // Size of each block
+constexpr int BLOCK_SIZE = 256; // Size of each block
 constexpr int SYSOPENFILE = 40;
 
 constexpr int NHINO = 128; // Hash number, must be power of 2
 
 // File system constants
-constexpr int DISK_INODE_AREA_SIZE = 128;									// i-node block count
-constexpr int DATA_BLOCK_AREA_SIZE = 512;									// Data block count
+constexpr int DISK_INODE_AREA_SIZE = 16;									// i-node block count
+constexpr int DATA_BLOCK_AREA_SIZE = 64;									// Data block count
 constexpr int NICFREE = 50;													// Free block stack size in superblock
 constexpr int NICINOD = 50;													// Free i-node array size in superblock
 constexpr int DISK_INODE_START_POINTOR = 2 * BLOCK_SIZE;					// i-node start address, leaving 1024 bytes, first for boot, second for superblock
@@ -48,20 +48,20 @@ struct FileSystem
 
 struct File
 {
-	char flag;					  /* 文件操作标志 */
-	unsigned int reference_count; /* 引用计数 */
-	MemoryINode *inode;			  /* 指向内存 i 节点 */
-	unsigned long offset;		  /* 读/写字符指针偏移量 */
+	char flag;				  /* 文件操作标志 */
+	uint32_t reference_count; /* 引用计数 */
+	MemoryINode *inode;		  /* 指向内存 i 节点 */
+	unsigned long offset;	  /* 读/写字符指针偏移量 */
 };
 
 // all functions
-extern unsigned int balloc(unsigned int);
-extern unsigned int balloc();
-extern void bfree(unsigned int);
+extern uint32_t balloc(uint32_t);
+extern uint32_t balloc();
+extern void bfree(uint32_t);
 
 extern void install();
 extern void format();
-extern void close(unsigned int, unsigned short);
+extern void close(uint32_t, uint_16);
 extern void halt();
 
 #endif
