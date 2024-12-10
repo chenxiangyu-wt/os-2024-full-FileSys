@@ -13,6 +13,7 @@ FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
 MemoryINode *cur_path_inode;
+
 int user_id;
 char disk[(DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE];
 char str[100];

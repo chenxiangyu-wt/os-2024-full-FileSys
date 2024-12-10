@@ -1,13 +1,15 @@
 #ifndef _FILESYS_H
 #define _FILESYS_H
 #include <cstdint>
+#include "iNode.hpp"
+#include "dEntry.hpp"
+#include "security.hpp"
 
 // All Defines
 constexpr int BLOCK_SIZE = 512; // Size of each block
 constexpr int SYSOPENFILE = 40;
 
-constexpr int NHINO = 128;						   // Hash number, must be power of 2
-constexpr int DISK_INODE_SIZE = sizeof(DiskINode); // Should be 50 bytes, but adjusted to 52 for memory alignment, changed from 32 to 52
+constexpr int NHINO = 128; // Hash number, must be power of 2
 
 // File system constants
 constexpr int DISK_INODE_AREA_SIZE = 128;									// i-node block count
@@ -17,6 +19,8 @@ constexpr int NICINOD = 50;													// Free i-node array size in superblock
 constexpr int DISK_INODE_START_POINTOR = 2 * BLOCK_SIZE;					// i-node start address, leaving 1024 bytes, first for boot, second for superblock
 constexpr int DATA_START_POINTOR = (2 + DISK_INODE_AREA_SIZE) * BLOCK_SIZE; // Data area start address
 constexpr int DISK_SIZE = (DISK_INODE_AREA_SIZE + DATA_BLOCK_AREA_SIZE + 2) * BLOCK_SIZE;
+constexpr int DISK_INODE_SIZE = sizeof(DiskINode); // Should be 50 bytes, but adjusted to 52 for memory alignment, changed from 32 to 52
+constexpr int MEMORY_INODE_SIZE = sizeof(MemoryINode);
 
 // s_fmod constants
 constexpr int SUPDATE = 00001;

@@ -1,9 +1,11 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
+#include "file_sys.hpp"
 #include "security.hpp"
 #include "file_sys.hpp"
 #include "iNode.hpp"
+#include "dEntry.hpp"
 
 // 哈希 i-node 表
 extern InodeHashTableEntry hinode[NHINO];

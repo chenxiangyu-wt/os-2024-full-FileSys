@@ -2,7 +2,6 @@
 #include <cstring>
 #include "file_sys.hpp"
 #include "globals.hpp"
-#include "dEntry.hpp"
 
 unsigned int read(int fd, char *buf, unsigned int size)
 {

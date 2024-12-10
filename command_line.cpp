@@ -2,6 +2,8 @@
 #include "file_sys.hpp"
 #include <sstream>
 #include <cstdlib>
+#include "dEntry.hpp"
+#include "security.hpp"
 
 // 构造函数
 CommandLine::CommandLine()

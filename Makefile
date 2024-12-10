@@ -13,8 +13,8 @@ SRCS = $(wildcard *.cpp)
 # 对应的目标文件列表
 OBJS = $(patsubst %.cpp, out/%.o, $(SRCS))
 
-# 默认目标
-all: $(TARGET)
+# 默认目标：先清理再编译
+all: clean $(TARGET)
 
 # 链接生成可执行文件
 $(TARGET): $(OBJS)

@@ -2,7 +2,7 @@
 #include <string.h>
 #include "file_sys.hpp"
 #include "globals.hpp"
-#include "dEntry.hpp"
+
 /*
 namei函数：参数：要查找的文件名。返回文件对应的内存目录项标号i；如果返回-1表示没有该文件。
 功能：查找文件在当前目录下对应的内存目录项的号；
