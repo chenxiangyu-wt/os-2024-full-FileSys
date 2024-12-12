@@ -1,7 +1,62 @@
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include "globals.hpp"
 
+void printDirectoryBuffer(DirectoryEntry dir_buf[], int count)
+{
+	std::cout << "====== Directory Entries ======\n";
+	std::cout << std::left << std::setw(20) << "Name" << std::setw(10) << "Inode" << "\n";
+	std::cout << "----------------------------------\n";
+
+	for (int i = 0; i < count; ++i)
+	{
+		if (dir_buf[i].inode_number != 0) // 忽略未使用的目录项
+		{
+			std::cout << std::left << std::setw(20) << dir_buf[i].name
+					  << std::setw(10) << dir_buf[i].inode_number << "\n";
+		}
+	}
+	std::cout << "================================\n";
+}
+
+void printDiskBlock(const uint8_t *disk, int start_offset, int block_size)
+{
+	std::cout << "===== Disk Block (Offset: " << start_offset << ", Size: " << block_size << " bytes) =====\n";
+
+	for (int i = 0; i < block_size; ++i)
+	{
+		// 按十六进制输出每个字节
+		std::cout << std::hex << std::setw(2) << std::setfill('0')
+				  << (static_cast<int>(static_cast<unsigned char>(disk[start_offset + i]))) << " ";
+
+		// 每 16 字节换行
+		if ((i + 1) % 16 == 0)
+			std::cout << "\n";
+	}
+
+	std::cout << "===========================================================\n";
+}
+void printDiskAsDirectory(const uint8_t *disk, int start_offset, int block_size)
+{
+	int entry_count = block_size / sizeof(DirectoryEntry);
+	DirectoryEntry *entries = (DirectoryEntry *)(disk + start_offset);
+
+	std::cout << "===== Disk Block as Directory Entries =====\n";
+	std::cout << std::left << std::setw(20) << "Name" << std::setw(10) << "Inode Number" << "\n";
+	std::cout << "--------------------------------------------\n";
+
+	for (int i = 0; i < entry_count; ++i)
+	{
+		if (entries[i].inode_number != 0) // 过滤无效目录项
+		{
+			std::cout << std::left << std::setw(20)
+					  << std::string(entries[i].name, ENTRY_NAME_LEN) // 确保长度限定
+					  << std::setw(10) << entries[i].inode_number << "\n";
+		}
+	}
+	std::cout << "===========================================\n";
+}
 void format()
 {
 	MemoryINode *inode;
@@ -9,6 +64,7 @@ void format()
 	DirectoryEntry dir_buf[BLOCK_SIZE / sizeof(DirectoryEntry)];
 	UserPassword passwd[PASSWORD_FILE_LIMITE];
 	uint32_t block_buf[BLOCK_SIZE / sizeof(int)];
+	int dir_entry_count = 0;
 
 	// 1. 初始化磁盘
 	memset(disk, 0, DISK_SIZE); // 将整个磁盘清零
@@ -66,7 +122,12 @@ void format()
 	strcpy(dir_buf[2].name, "etc");
 	dir_buf[2].inode_number = 2;
 
+	dir_entry_count = BLOCK_SIZE / sizeof(DirectoryEntry);
+	// printDirectoryBuffer(dir_buf, dir_entry_count);
 	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
+	int block_offset = DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE;
+	// printDiskBlock(disk, block_offset, BLOCK_SIZE);
+	// printDiskAsDirectory(disk, block_offset, BLOCK_SIZE);
 	iput(inode);
 
 	// 5. 创建 `etc` 目录 (inode 2)
@@ -83,8 +144,11 @@ void format()
 	dir_buf[1].inode_number = 2;
 	strcpy(dir_buf[2].name, "password");
 	dir_buf[2].inode_number = 3;
-
+	dir_entry_count = BLOCK_SIZE / sizeof(DirectoryEntry);
+	// printDirectoryBuffer(dir_buf, dir_entry_count);
 	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
+	block_offset += inode->block_addresses[0] * BLOCK_SIZE;
+	// printDiskAsDirectory(disk, block_offset, BLOCK_SIZE);
 	iput(inode);
 
 	// 6. 创建 `password` 文件 (inode 3)
@@ -93,12 +157,11 @@ void format()
 	inode->file_size = BLOCK_SIZE;
 	inode->reference_count = 1;
 	inode->block_addresses[0] = balloc();
-
 	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, BLOCK_SIZE);
 	iput(inode);
 
 	// 7. 将超级块写入磁盘
-	memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem));
+	memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem)); // 第0块为空闲块
 
 	std::cout << "Format completed. File system initialized." << std::endl;
 }

@@ -99,7 +99,7 @@ int CommandLine::cmdMkfile(const std::vector<std::string> &args)
         return 1;
     }
     std::string filename = args[1];
-    uint_16 mode = DEFAULTMODE;
+    uint16_t mode = DEFAULTMODE;
     if (args.size() > 2)
     {
         sscanf(args[2].c_str(), "%ho", &mode);

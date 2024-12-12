@@ -4,7 +4,7 @@
 #include "globals.hpp"
 #include "log.hpp"
 
-int find_user_index(uint_16 uid, const char *passwd)
+int find_user_index(uint16_t uid, const char *passwd)
 {
 	for (int i = 0; i < PWDNUM; i++)
 	{
@@ -27,7 +27,7 @@ int find_free_user_slot()
 	return -1; // 无空闲位置
 }
 
-int login(uint_16 uid, const char *passwd)
+int login(uint16_t uid, const char *passwd)
 {
 	int user_index = find_user_index(uid, passwd);
 	if (user_index == -1)
@@ -50,7 +50,7 @@ int login(uint_16 uid, const char *passwd)
 
 	return LOGIN_SUCCESS;
 }
-// int login(uint_16 uid, char *passwd)
+// int login(uint16_t uid, char *passwd)
 // {
 // 	int i, j;
 
@@ -88,7 +88,7 @@ int login(uint_16 uid, const char *passwd)
 // 		return j;
 // 	}
 // }
-int logout(uint_16 uid)
+int logout(uint16_t uid)
 {
 	int i, j, sys_no;
 	struct MemoryINode *inode;
@@ -111,9 +111,9 @@ int logout(uint_16 uid)
 		{
 			/* iput the inode free the sys_ofile and clear the user_ofile */
 			sys_no = user[i].open_files[j];
-			inode = sys_ofile[sys_no].inode;
+			inode = system_opened_file[sys_no].inode;
 			iput(inode);
-			sys_ofile[sys_no].reference_count--;
+			system_opened_file[sys_no].reference_count--;
 			user[i].open_files[j] = SYSOPENFILE + 1;
 		}
 	}

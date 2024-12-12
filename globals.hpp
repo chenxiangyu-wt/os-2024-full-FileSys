@@ -14,7 +14,7 @@ extern InodeHashTableEntry hinode[NHINO];
 extern Directory dir;
 
 // 系统打开文件表
-extern File sys_ofile[SYSOPENFILE];
+extern File system_opened_file[SYSOPENFILE];
 
 // 超级块
 extern FileSystem fileSystem;

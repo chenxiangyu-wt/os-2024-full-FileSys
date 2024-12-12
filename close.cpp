@@ -6,12 +6,12 @@
 函数：close
 功能：关闭打开文件时，修改用户打开表和系统打开表中的纪录信息
 *******************************************************/
-void close(uint32_t user_id, uint_16 cfd)
+void close(uint32_t user_id, uint16_t cfd)
 {
 	struct MemoryINode *inode;
-	inode = sys_ofile[user[user_id].open_files[cfd]].inode;
+	inode = system_opened_file[user[user_id].open_files[cfd]].inode;
 	iput(inode);
-	sys_ofile[user[user_id].open_files[cfd]].reference_count--;
+	system_opened_file[user[user_id].open_files[cfd]].reference_count--;
 	user[user_id].open_files[cfd] = SYSOPENFILE + 1;
 	return;
 }

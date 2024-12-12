@@ -49,5 +49,5 @@ extern void iput(MemoryINode *);
 extern MemoryINode *ialloc();
 extern void ifree(uint32_t);
 extern int namei(const char *);
-extern uint_16 iname(const char *);
+extern uint16_t iname(const char *);
 #endif // INODE_HPP

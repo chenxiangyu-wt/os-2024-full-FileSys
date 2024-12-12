@@ -8,7 +8,7 @@
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;
-File sys_ofile[SYSOPENFILE];
+File system_opened_file[SYSOPENFILE];
 FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
@@ -23,7 +23,7 @@ int main()
 	user_id = -1;
 	format();
 	install();
-	printDisk();
+	// printDisk();
 
 	printf("Welcome to mini filesystem!\n");
 
