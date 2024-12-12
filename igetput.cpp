@@ -8,52 +8,48 @@
 /* 作用：	为磁盘i结点分配对应的内存i结点	*/
 /* 参数:	待分配的磁盘i结点号				*/
 /* 返回值：	指向对应的内存i结点的指针		*/
-MemoryINode *iget(unsigned int dinodeid)
+MemoryINode *iget(uint32_t dinodeid)
 {
-	int existed = 0, inodeid;
-	long addr;
-	struct MemoryINode *temp, *newinode;
+	int inodeid = dinodeid % NHINO; // 计算哈希链表索引
+	MemoryINode *temp = hinode[inodeid].prev_inode;
 
-	inodeid = dinodeid % NHINO;				// 计算内存结点应该在第几个哈希队列里
-	if (hinode[inodeid].prev_inode == NULL) // 若该哈希队列为空，内存结点一定未被创建
-		existed = 0;
-	else // 若不为空，从该哈希队列头开始查找
+	// 1. 检查哈希链表中是否已存在该 i-node
+	while (temp)
 	{
-		temp = hinode[inodeid].prev_inode;
-		while (temp)
+		if (temp->status_flag == dinodeid) // 已存在
 		{
-			if (temp->status_flag == dinodeid) // 若找到
-			{
-				existed = 1;
-				temp->reference_count++;
-				return temp; // 返回该内存结点指针
-			}
-			else
-				temp = temp->prev;
+			temp->reference_count++;
+			return temp;
 		}
+		temp = temp->next;
 	}
 
-	/* 若没有找到 */
-	/* 1. 计算该磁盘i结点在文件卷中的位置 */
-	addr = DISK_INODE_START_POINTOR + dinodeid * DISK_INODE_SIZE;
+	// 2. 若没有找到，从磁盘加载 i-node
+	long addr = DISK_INODE_START_POINTOR + dinodeid * DISK_INODE_SIZE;
+	DiskINode d_inode;
 
-	/* 2. 分配一个内存i结点 */
-	newinode = (struct MemoryINode *)malloc(sizeof(MemoryINode));
+	memcpy(&d_inode, disk + addr, sizeof(DiskINode)); // 读取磁盘 i-node
 
-	/* 3. 用磁盘i结点初始化内存i结点 */
-	memcpy(&(newinode->reference_count), disk + addr, DISK_INODE_SIZE);
-
-	/* 4. 将内存i结点链入相应的哈希队列里*/
-	newinode->prev = hinode[inodeid].prev_inode;
-	hinode[inodeid].prev_inode = newinode;
-	newinode->next = newinode;
-	if (newinode->prev)
-		newinode->prev->next = newinode;
-
-	/*5. 初始化内存i结点的其他数据项 */
+	// 3. 分配内存 i-node 并初始化
+	MemoryINode *newinode = (MemoryINode *)malloc(sizeof(MemoryINode));
 	newinode->reference_count = 1;
-	newinode->status_flag = 0; /* 表示未更新 */
 	newinode->status_flag = dinodeid;
+	newinode->disk_inode_number = dinodeid;
+
+	newinode->mode = d_inode.mode;
+	newinode->owner_uid = d_inode.owner_uid;
+	newinode->owner_gid = d_inode.owner_gid;
+	newinode->file_size = d_inode.file_size;
+	memcpy(newinode->block_addresses, d_inode.block_addresses, sizeof(d_inode.block_addresses));
+
+	// 4. 插入哈希链表
+	newinode->next = hinode[inodeid].prev_inode;
+	newinode->prev = nullptr;
+
+	if (hinode[inodeid].prev_inode)
+		hinode[inodeid].prev_inode->prev = newinode;
+
+	hinode[inodeid].prev_inode = newinode;
 
 	return newinode;
 }
@@ -65,52 +61,53 @@ MemoryINode *iget(unsigned int dinodeid)
 void iput(struct MemoryINode *pinode)
 {
 	long addr;
-	unsigned int block_num;
 
-	if (pinode->reference_count > 1) // 若引用计数>1
+	// 1. 如果引用计数大于 1，只减少引用计数
+	if (pinode->reference_count > 1)
 	{
 		pinode->reference_count--;
-
 		return;
 	}
-	else
+
+	// 2. 如果引用计数不为 0，将内存 i-node 写回磁盘
+	if (pinode->reference_count != 0)
 	{
-		if (pinode->reference_count != 0) // 若联结计数不为0
-		{
-			/* 把内存i结点的内容写回磁盘i结点 */
-			addr = DISK_INODE_START_POINTOR + pinode->status_flag * DISK_INODE_SIZE;
-			memcpy(disk + addr, &pinode->reference_count, DISK_INODE_SIZE);
-		}
-		else
-		{
-			/* 删除磁盘i结点和文件对应的物理块 */
-			block_num = pinode->file_size / BLOCK_SIZE;
-			for (unsigned int i = 0; i < block_num; i++)
-				bfree(pinode->block_addresses[i]);
-			ifree(pinode->status_flag);
-		}
+		addr = DISK_INODE_START_POINTOR + pinode->disk_inode_number * DISK_INODE_SIZE;
 
-		/* 释放内存i结点 */
-		{
-			int inodeid;
-			inodeid = (pinode->status_flag) % NHINO; // 找到所在的哈希队列
+		// 构建磁盘 i-node
+		DiskINode d_inode;
+		d_inode.mode = pinode->mode;
+		d_inode.owner_uid = pinode->owner_uid;
+		d_inode.owner_gid = pinode->owner_gid;
+		d_inode.file_size = pinode->file_size;
+		memcpy(d_inode.block_addresses, pinode->block_addresses, sizeof(d_inode.block_addresses));
 
-			/* 从该哈希队列里删除 */
-			if (hinode[inodeid].prev_inode == pinode)
-			{
-				hinode[inodeid].prev_inode = pinode->prev;
-				if (pinode->prev)
-					pinode->prev->next = pinode->prev;
-			}
-			else
-			{
-				pinode->next->prev = pinode->prev;
-				if (pinode->prev)
-					pinode->prev->next = pinode->next;
-			}
-		}
-		free(pinode);
+		memcpy(disk + addr, &d_inode, sizeof(DiskINode));
+	}
+	else // 3. 如果引用计数为 0，释放磁盘资源
+	{
+		uint32_t block_num = (pinode->file_size + BLOCK_SIZE - 1) / BLOCK_SIZE; // 向上取整
+		for (uint32_t i = 0; i < block_num; i++)
+			bfree(pinode->block_addresses[i]);
+
+		ifree(pinode->disk_inode_number);
 	}
 
-	return;
+	// 4. 从哈希链表中删除内存 i-node
+	int inodeid = pinode->disk_inode_number % NHINO;
+
+	if (hinode[inodeid].prev_inode == pinode) // 如果是链表头
+	{
+		hinode[inodeid].prev_inode = pinode->next;
+	}
+	else // 链表中的其他位置
+	{
+		if (pinode->next)
+			pinode->next->prev = pinode->prev;
+		if (pinode->prev)
+			pinode->prev->next = pinode->next;
+	}
+
+	// 5. 释放内存 i-node
+	free(pinode);
 }

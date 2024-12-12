@@ -2,23 +2,22 @@
 #include <cstring>
 #include "file_sys.hpp"
 #include "globals.hpp"
-#include "dEntry.hpp"
 
-unsigned int read(int fd, char *buf, unsigned int size)
+uint32_t read(int fd, char *buf, uint32_t size)
 {
 	unsigned long off;
-	unsigned int block, block_off, i, j;
+	uint32_t block, block_off, i, j;
 	struct MemoryINode *inode;
 	char *temp_buf;
 
-	inode = sys_ofile[user[user_id].open_files[fd]].inode;
-	if (!(sys_ofile[user[user_id].open_files[fd]].flag & FREAD))
+	inode = system_opened_file[user[user_id].open_files[fd]].inode;
+	if (!(system_opened_file[user[user_id].open_files[fd]].flag & FREAD))
 	{
 		printf("\nthe file is not opened for read\n");
 		return 0;
 	}
 	temp_buf = buf;
-	off = sys_ofile[user[user_id].open_files[fd]].offset;
+	off = system_opened_file[user[user_id].open_files[fd]].offset;
 	if ((off + size) > inode->file_size)
 	{
 		size = inode->file_size - off;
@@ -41,25 +40,25 @@ unsigned int read(int fd, char *buf, unsigned int size)
 
 	block_off = (size - (BLOCK_SIZE - block_off)) % BLOCK_SIZE;
 	memcpy(temp_buf, disk + DATA_START_POINTOR + i * BLOCK_SIZE, block_off);
-	sys_ofile[user[user_id].open_files[fd]].offset += size;
+	system_opened_file[user[user_id].open_files[fd]].offset += size;
 	return size;
 }
 
-unsigned int write(int fd, char *buf, unsigned int size)
+uint32_t write(int fd, char *buf, uint32_t size)
 {
 	unsigned long off;
-	unsigned int block, block_off, i, j;
+	uint32_t block, block_off, i, j;
 	struct MemoryINode *inode;
 	char *temp_buf;
 
-	inode = sys_ofile[user[user_id].open_files[fd]].inode;
-	if (!(sys_ofile[user[user_id].open_files[fd]].flag & FWRITE))
+	inode = system_opened_file[user[user_id].open_files[fd]].inode;
+	if (!(system_opened_file[user[user_id].open_files[fd]].flag & FWRITE))
 	{
 		printf("\nthe file is not opened for write\n");
 		return 0;
 	}
 	// add by liwen to check the filesize and alloc the BLOCK
-	off = sys_ofile[user[user_id].open_files[fd]].offset;
+	off = system_opened_file[user[user_id].open_files[fd]].offset;
 	block = ((off + size) - inode->file_size) / BLOCK_SIZE; // ÉÐÐè¸öÊý
 	if (((off + size) - inode->file_size) % BLOCK_SIZE)
 		block++;
@@ -86,7 +85,7 @@ unsigned int write(int fd, char *buf, unsigned int size)
 	// end add
 	temp_buf = buf;
 
-	off = sys_ofile[user[user_id].open_files[fd]].offset;
+	off = system_opened_file[user[user_id].open_files[fd]].offset;
 	block_off = off % BLOCK_SIZE;
 	block = off / BLOCK_SIZE;
 
@@ -105,6 +104,6 @@ unsigned int write(int fd, char *buf, unsigned int size)
 	}
 	block_off = (size - (BLOCK_SIZE - block_off)) % BLOCK_SIZE;
 	memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, temp_buf, block_off);
-	sys_ofile[user[user_id].open_files[fd]].offset += size;
+	system_opened_file[user[user_id].open_files[fd]].offset += size;
 	return size;
 }

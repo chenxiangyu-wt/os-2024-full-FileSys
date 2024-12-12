@@ -3,55 +3,55 @@
 #include <iostream>
 #include "file_sys.hpp"
 #include "globals.hpp"
-#include "dEntry.hpp"
 
 void _dir()
 {
-	unsigned int mode;
+	uint32_t mode;
 	uint32_t i, j, k; // xiao
 	struct MemoryINode *temp_inode;
-	// for (auto item : dir.entries)
-	// {
-	// 	std::cout << item.name << std::endl;
-	// }
 	printf("\n CURRENT DIRECTORY :%s\n", dir.entries[0].name);
 	printf("当前共有%d个文件/目录\n", dir.entry_count);
-	for (i = 0; i < ENTRY_NAME_LEN; i++)
+	for (auto item : dir.entries)
 	{
-		if (dir.entries[i].inode_number != DIEMPTY)
-		{
-			printf("%-14s", dir.entries[i].name);
-			temp_inode = iget(dir.entries[i].inode_number);
-			mode = temp_inode->mode & 00777;
-			for (j = 0; j < 9; j++)
-			{
-				if (mode % 2)
-				{
-					printf("x");
-				}
-				else
-				{
-					printf("-");
-				}
-				mode = mode / 2;
-			}
-			printf("\ti_ino->%d\t", temp_inode->status_flag);
-			if (temp_inode->mode & DIFILE)
-			{
-				printf(" %d ", temp_inode->file_size);
-				printf("block chain:");
-				j = (temp_inode->file_size % BLOCK_SIZE) ? 1 : 0;
-				for (k = 0; k < temp_inode->file_size / BLOCK_SIZE + j; k++)
-					printf("%4d", temp_inode->block_addresses[k]);
-				printf("\n");
-			}
-			else
-			{
-				printf("<dir>\n");
-			} // else
-			iput(temp_inode);
-		} // if (dir.direct[i].d_ino != DIEMPTY)
-	} // for
+		std::cout << item.name << std::endl;
+	}
+
+	// for (i = 0; i < ENTRY_NAME_LEN; i++)
+	// {
+	// 	if (dir.entries[i].inode_number != DIEMPTY)
+	// 	{
+	// 		printf("%-14s", dir.entries[i].name);
+	// 		temp_inode = iget(dir.entries[i].inode_number);
+	// 		mode = temp_inode->mode & 00777;
+	// 		for (j = 0; j < 9; j++)
+	// 		{
+	// 			if (mode % 2)
+	// 			{
+	// 				printf("x");
+	// 			}
+	// 			else
+	// 			{
+	// 				printf("-");
+	// 			}
+	// 			mode = mode / 2;
+	// 		}
+	// 		printf("\ti_ino->%d\t", temp_inode->status_flag);
+	// 		if (temp_inode->mode & DIFILE)
+	// 		{
+	// 			printf(" %d ", temp_inode->file_size);
+	// 			printf("block chain:");
+	// 			j = (temp_inode->file_size % BLOCK_SIZE) ? 1 : 0;
+	// 			for (k = 0; k < temp_inode->file_size / BLOCK_SIZE + j; k++)
+	// 				printf("%4d", temp_inode->block_addresses[k]);
+	// 			printf("\n");
+	// 		}
+	// 		else
+	// 		{
+	// 			printf("<dir>\n");
+	// 		} // else
+	// 		iput(temp_inode);
+	// 	} // if (dir.direct[i].d_ino != DIEMPTY)
+	// } // for
 	return;
 }
 void mkdir(const char *dirname)
@@ -59,7 +59,7 @@ void mkdir(const char *dirname)
 	int dirid, dirpos;
 	MemoryINode *inode;
 	DirectoryEntry buf[BLOCK_SIZE / (sizeof(DirectoryEntry))];
-	unsigned int block;
+	uint32_t block;
 
 	dirid = namei(dirname);
 	if (dirid != -1)
@@ -100,7 +100,7 @@ void chdir(const char *dirname)
 {
 	int dirid;
 	struct MemoryINode *inode;
-	unsigned short block;
+	uint16_t block;
 	int j, low = 0, high = 0;
 
 	dirid = namei(dirname);
@@ -115,7 +115,7 @@ void chdir(const char *dirname)
 		printf("不是一个目录！\n");
 		return;
 	}
-	for (unsigned int i = 0; i < dir.entry_count; i++)
+	for (uint32_t i = 0; i < dir.entry_count; i++)
 	{
 		if (dir.entries[i].inode_number == 0)
 		{
@@ -126,11 +126,11 @@ void chdir(const char *dirname)
 		}
 	}
 	j = cur_path_inode->file_size % BLOCK_SIZE ? 1 : 0;
-	for (unsigned short i = 0; i < cur_path_inode->file_size / BLOCK_SIZE + j; i++)
+	for (uint16_t i = 0; i < cur_path_inode->file_size / BLOCK_SIZE + j; i++)
 	{
 		bfree(cur_path_inode->block_addresses[i]);
 	}
-	for (unsigned int i = 0; i < dir.entry_count; i += BLOCK_SIZE / (sizeof(DirectoryEntry)))
+	for (uint32_t i = 0; i < dir.entry_count; i += BLOCK_SIZE / (sizeof(DirectoryEntry)))
 	{
 		block = balloc();
 		cur_path_inode->block_addresses[i] = block;
@@ -141,13 +141,13 @@ void chdir(const char *dirname)
 	cur_path_inode = inode;
 
 	j = 0;
-	for (unsigned short i = 0; i < inode->file_size / BLOCK_SIZE + 1; i++)
+	for (uint16_t i = 0; i < inode->file_size / BLOCK_SIZE + 1; i++)
 	{
 		memcpy(&dir.entries[j], disk + DATA_START_POINTOR + inode->block_addresses[i] * BLOCK_SIZE, BLOCK_SIZE);
 		j += BLOCK_SIZE / (sizeof(DirectoryEntry));
 	}
 	dir.entry_count = cur_path_inode->file_size / (sizeof(DirectoryEntry));
-	for (unsigned int i = dir.entry_count; i < ENTRY_NAME_LEN; i++)
+	for (uint32_t i = dir.entry_count; i < ENTRY_NAME_LEN; i++)
 	{
 		dir.entries[i].inode_number = 0;
 	}

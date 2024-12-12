@@ -6,7 +6,7 @@
 函数：creat
 功能：创建文件，存在且可写则覆盖，否则申请i节点，并打开该文件，返回文件指针
 **********************************************************************/
-int creat(unsigned int user_id, const char *filename, unsigned short mode)
+int creat(uint32_t user_id, const char *filename, uint16_t mode)
 {
 	struct MemoryINode *inode;
 	int dirid, di_ith;
@@ -32,9 +32,9 @@ int creat(unsigned int user_id, const char *filename, unsigned short mode)
 
 		for (i = 0; i < SYSOPENFILE; i++)
 		{
-			if (sys_ofile[i].reference_count != 0 && sys_ofile[i].inode == inode)
+			if (system_opened_file[i].reference_count != 0 && system_opened_file[i].inode == inode)
 			{
-				sys_ofile[i].offset = 0;
+				system_opened_file[i].offset = 0;
 			}
 		}
 		iput(inode);

@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include "file_sys.hpp"
 #include "globals.hpp"
-#include "dEntry.hpp"
 
 short open(int user_id, const char *filename, char openmode)
 {
-	unsigned int dinodeid;
+	uint32_t dinodeid;
 	struct MemoryINode *inode;
 	uint32_t i, j, k;
 
@@ -31,7 +30,7 @@ short open(int user_id, const char *filename, char openmode)
 
 	for (i = 1; i < SYSOPENFILE; i++)
 	{
-		if (sys_ofile[i].reference_count == 0)
+		if (system_opened_file[i].reference_count == 0)
 			break;
 	}
 
@@ -42,17 +41,17 @@ short open(int user_id, const char *filename, char openmode)
 		return -1;
 	}
 
-	sys_ofile[i].inode = inode;
-	sys_ofile[i].flag = openmode;
-	sys_ofile[i].reference_count = 1;
+	system_opened_file[i].inode = inode;
+	system_opened_file[i].flag = openmode;
+	system_opened_file[i].reference_count = 1;
 
 	if (openmode & FAPPEND)
 	{
-		sys_ofile[i].offset = inode->file_size;
+		system_opened_file[i].offset = inode->file_size;
 	}
 	else
 	{
-		sys_ofile[i].offset = 0;
+		system_opened_file[i].offset = 0;
 	}
 
 	for (j = 0; j < NOFILE; j++)
@@ -64,7 +63,7 @@ short open(int user_id, const char *filename, char openmode)
 	if (j == NOFILE)
 	{
 		printf("\nuser open file too much!!!\n");
-		sys_ofile[i].reference_count = 0;
+		system_opened_file[i].reference_count = 0;
 		iput(inode);
 		return -1;
 	}
