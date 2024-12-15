@@ -51,7 +51,7 @@ void printDiskAsDirectory(const uint8_t *disk, int start_offset, int block_size)
 		if (entries[i].inode_number != 0) // 过滤无效目录项
 		{
 			std::cout << std::left << std::setw(20)
-					  << std::string(entries[i].name, ENTRY_NAME_LEN) // 确保长度限定
+					  << std::string(entries[i].name, ENTRY_NUM) // 确保长度限定
 					  << std::setw(10) << entries[i].inode_number << "\n";
 		}
 	}
@@ -63,11 +63,9 @@ void format()
 	uint32_t PASSWORD_FILE_LIMITE = 32;
 	DirectoryEntry dir_buf[BLOCK_SIZE / sizeof(DirectoryEntry)];
 	UserPassword passwd[PASSWORD_FILE_LIMITE];
-	uint32_t block_buf[BLOCK_SIZE / sizeof(int)];
-	int dir_entry_count = 0;
 
 	// 1. 初始化磁盘
-	memset(disk, 0, DISK_SIZE); // 将整个磁盘清零
+	memset(disk, 0, DISK_SIZE);
 
 	// 2. 初始化密码文件内容
 	memset(passwd, 0, sizeof(passwd));
@@ -77,7 +75,7 @@ void format()
 	passwd[3] = {2119, 4, "cccc"};
 	passwd[4] = {2120, 5, "eeee"};
 
-	for (int i = 5; i < PASSWORD_FILE_LIMITE; i++)
+	for (uint32_t i = 5; i < PASSWORD_FILE_LIMITE; i++)
 	{
 		passwd[i].user_id = 0;
 		passwd[i].group_id = 0;
@@ -88,28 +86,22 @@ void format()
 	fileSystem.inode_block_count = DISK_INODE_AREA_SIZE;
 	fileSystem.data_block_count = DATA_BLOCK_AREA_SIZE;
 
-	fileSystem.free_inode_count = (DISK_INODE_AREA_SIZE * BLOCK_SIZE) / DISK_INODE_SIZE - 4; // 前 4 个已使用
-	fileSystem.free_block_count = DATA_BLOCK_AREA_SIZE - 3;									 // 数据区保留了 3 块
+	fileSystem.free_inode_count = (DISK_INODE_AREA_SIZE * BLOCK_SIZE) / DISK_INODE_SIZE - 4;
+	fileSystem.free_block_count = DATA_BLOCK_AREA_SIZE - 3;
 
-	// 初始化空闲 i-node 数组
 	for (int i = 0; i < NICINOD; i++)
-	{
-		fileSystem.free_inodes[i] = i + 4; // 从 i-node 4 开始
-	}
+		fileSystem.free_inodes[i] = i + 4;
 	fileSystem.free_inode_pointer = 0;
 	fileSystem.last_allocated_inode = NICINOD + 4;
 
-	// 初始化空闲块栈
 	int block_index = DATA_BLOCK_AREA_SIZE - 1;
 	for (int i = 0; i < NICFREE; i++)
-	{
 		fileSystem.free_blocks[i] = block_index--;
-	}
 	fileSystem.free_block_pointer = 0;
 
 	// 4. 创建根目录 (inode 1)
 	inode = iget(1);
-	inode->mode = DIDIR | 0755; // 目录模式
+	inode->mode = DIDIR | 0755;
 	inode->file_size = 3 * sizeof(DirectoryEntry);
 	inode->reference_count = 1;
 	inode->block_addresses[0] = balloc();
@@ -117,17 +109,17 @@ void format()
 	memset(dir_buf, 0, sizeof(dir_buf));
 	strcpy(dir_buf[0].name, "..");
 	dir_buf[0].inode_number = 1;
+	dir_buf[0].type = DENTRY_DIR;
+
 	strcpy(dir_buf[1].name, ".");
 	dir_buf[1].inode_number = 1;
+	dir_buf[1].type = DENTRY_DIR;
+
 	strcpy(dir_buf[2].name, "etc");
 	dir_buf[2].inode_number = 2;
+	dir_buf[2].type = DENTRY_DIR;
 
-	dir_entry_count = BLOCK_SIZE / sizeof(DirectoryEntry);
-	// printDirectoryBuffer(dir_buf, dir_entry_count);
 	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
-	int block_offset = DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE;
-	// printDiskBlock(disk, block_offset, BLOCK_SIZE);
-	// printDiskAsDirectory(disk, block_offset, BLOCK_SIZE);
 	iput(inode);
 
 	// 5. 创建 `etc` 目录 (inode 2)
@@ -140,28 +132,31 @@ void format()
 	memset(dir_buf, 0, sizeof(dir_buf));
 	strcpy(dir_buf[0].name, "..");
 	dir_buf[0].inode_number = 1;
+	dir_buf[0].type = DENTRY_DIR;
+
 	strcpy(dir_buf[1].name, ".");
 	dir_buf[1].inode_number = 2;
+	dir_buf[1].type = DENTRY_DIR;
+
 	strcpy(dir_buf[2].name, "password");
 	dir_buf[2].inode_number = 3;
-	dir_entry_count = BLOCK_SIZE / sizeof(DirectoryEntry);
-	// printDirectoryBuffer(dir_buf, dir_entry_count);
+	dir_buf[2].type = DENTRY_FILE;
+
 	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
-	block_offset += inode->block_addresses[0] * BLOCK_SIZE;
-	// printDiskAsDirectory(disk, block_offset, BLOCK_SIZE);
 	iput(inode);
 
 	// 6. 创建 `password` 文件 (inode 3)
 	inode = iget(3);
-	inode->mode = DIFILE | 0644; // 文件模式
+	inode->mode = DIFILE | 0644;
 	inode->file_size = BLOCK_SIZE;
 	inode->reference_count = 1;
 	inode->block_addresses[0] = balloc();
+
 	memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, BLOCK_SIZE);
 	iput(inode);
 
 	// 7. 将超级块写入磁盘
-	memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem)); // 第0块为空闲块
+	memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem));
 
 	std::cout << "Format completed. File system initialized." << std::endl;
 }
