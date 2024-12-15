@@ -12,6 +12,8 @@ CommandLine::CommandLine()
     { return cmdExit(args); };
     command_map["dir"] = [this](const std::vector<std::string> &args)
     { return cmdDir(args); };
+    command_map["ls"] = [this](const std::vector<std::string> &args)
+    { return cmdDir(args); };
     command_map["mkdir"] = [this](const std::vector<std::string> &args)
     { return cmdMkdir(args); };
     command_map["cd"] = [this](const std::vector<std::string> &args)

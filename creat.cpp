@@ -12,7 +12,7 @@ int creat(uint32_t user_id, const char *filename, uint16_t mode)
 	int dirid, di_ith;
 	uint32_t i, j;
 
-	dirid = namei(filename);
+	dirid = namei(filename, DENTRY_FILE);
 	if (dirid != -1)
 	{ // 如果存在同名文件/目录
 		inode = iget(dir.entries[dirid].inode_number);
@@ -47,6 +47,7 @@ int creat(uint32_t user_id, const char *filename, uint16_t mode)
 
 		dir.entry_count++;
 		dir.entries[di_ith].inode_number = inode->status_flag;
+		dir.entries[di_ith].type = DENTRY_FILE;
 		inode->mode = mode;
 		inode->owner_uid = user[user_id].user_id;
 		inode->owner_gid = user[user_id].group_id;

@@ -7,7 +7,7 @@ void removeFile(const char *filename)
 	int dirid;
 	struct MemoryINode *inode;
 
-	dirid = namei(filename);
+	dirid = namei(filename, DENTRY_FILE);
 	if (dirid == -1)
 	{
 		printf("文件不存在，请检查!\n");

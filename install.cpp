@@ -99,7 +99,7 @@ void install()
 	std::cout << "Number of directory entries: " << dir.entry_count << std::endl;
 
 	// 初始化内存中的目录结构（清空）
-	for (uint32_t i = 0; i < ENTRY_NAME_LEN; i++)
+	for (uint32_t i = 0; i < ENTRY_NUM; i++)
 	{
 		strcpy(dir.entries[i].name, "             "); // 清空名称
 		dir.entries[i].inode_number = 0;			  // 清空 i-node 编号

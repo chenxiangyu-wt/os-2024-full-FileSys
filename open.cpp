@@ -4,17 +4,17 @@
 
 short open(int user_id, const char *filename, char openmode)
 {
-	uint32_t dinodeid;
+	int disk_inode_id;
 	struct MemoryINode *inode;
 	uint32_t i, j, k;
 
-	dinodeid = namei(filename);
-	if (dinodeid == 0)
+	disk_inode_id = namei(filename, DENTRY_FILE);
+	if (disk_inode_id == 0)
 	{
 		printf("\nfile does not existed!!!\n");
 		return -1;
 	}
-	inode = iget(dir.entries[dinodeid].inode_number);
+	inode = iget(dir.entries[disk_inode_id].inode_number);
 	if (!(inode->mode & DIFILE))
 	{
 		printf("%s is not a file!!!\n", filename);
