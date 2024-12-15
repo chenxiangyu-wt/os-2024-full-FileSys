@@ -63,11 +63,17 @@ void mkdir(const char *dirname)
 	found_inode_id = namei(dirname, DENTRY_DIR);
 	if (found_inode_id != -1)
 	{
+		// 目录已存在
 		inode = iget(found_inode_id);
-		if (inode->mode & DIDIR)
-			printf("目录%s已存在！\n", dirname); // xiao
-		else
-			printf("%s是一个文件！\n", dirname);
+		printf("目录%s已存在！\n", dirname);
+		// if (inode->mode & DIDIR)
+		// {
+		// 	printf("目录%s已存在！\n", dirname); // xiao
+		// }
+		// else
+		// {
+		// 	printf("%s是一个文件！\n", dirname);
+		// }
 		iput(inode);
 		return;
 	}
