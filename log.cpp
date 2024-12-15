@@ -107,14 +107,14 @@ int logout(uint16_t uid)
 
 	for (j = 0; j < NOFILE; j++)
 	{
-		if (user[i].open_files[j] != SYSOPENFILE + 1)
+		if (user[i].open_files[j] != SYSTEM_MAX_OPEN_FILE_NUM + 1)
 		{
 			/* iput the inode free the sys_ofile and clear the user_ofile */
 			sys_no = user[i].open_files[j];
 			inode = system_opened_file[sys_no].inode;
 			iput(inode);
 			system_opened_file[sys_no].reference_count--;
-			user[i].open_files[j] = SYSOPENFILE + 1;
+			user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
 		}
 	}
 	return 1;

@@ -69,27 +69,32 @@ void iput(struct MemoryINode *pinode)
 		return;
 	}
 
-	// 2. 如果引用计数不为 0，将内存 i-node 写回磁盘
-	if (pinode->reference_count != 0)
+	// 2. 如果引用计数等于 1，将内存 i-node 写回磁盘
+	if (pinode->reference_count == 1)
 	{
 		addr = DISK_INODE_START_POINTOR + pinode->disk_inode_number * DISK_INODE_SIZE;
 
 		// 构建磁盘 i-node
-		DiskINode d_inode;
-		d_inode.mode = pinode->mode;
-		d_inode.owner_uid = pinode->owner_uid;
-		d_inode.owner_gid = pinode->owner_gid;
-		d_inode.file_size = pinode->file_size;
-		memcpy(d_inode.block_addresses, pinode->block_addresses, sizeof(d_inode.block_addresses));
+		DiskINode disk_inode;
+		disk_inode.mode = pinode->mode;
+		disk_inode.owner_uid = pinode->owner_uid;
+		disk_inode.owner_gid = pinode->owner_gid;
+		disk_inode.file_size = pinode->file_size;
+		memcpy(disk_inode.block_addresses, pinode->block_addresses, sizeof(disk_inode.block_addresses));
 
-		memcpy(disk + addr, &d_inode, sizeof(DiskINode));
+		// 写回磁盘
+		memcpy(disk + addr, &disk_inode, sizeof(DiskINode));
 	}
-	else // 3. 如果引用计数为 0，释放磁盘资源
+	else if (pinode->reference_count == 0) // 3. 如果引用计数为 0，释放磁盘资源
 	{
+		// 释放数据块
 		uint32_t block_num = (pinode->file_size + BLOCK_SIZE - 1) / BLOCK_SIZE; // 向上取整
 		for (uint32_t i = 0; i < block_num; i++)
+		{
 			bfree(pinode->block_addresses[i]);
+		}
 
+		// 释放 i-node 号
 		ifree(pinode->disk_inode_number);
 	}
 

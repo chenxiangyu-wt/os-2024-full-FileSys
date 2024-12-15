@@ -7,6 +7,9 @@
 #include <functional>
 #include <iostream>
 
+constexpr int SUCC_RETURN = 1;
+constexpr int EXIT_RETURN = 0;
+
 class CommandLine
 {
 private:

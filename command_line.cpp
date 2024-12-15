@@ -2,6 +2,7 @@
 #include "file_sys.hpp"
 #include <sstream>
 #include <cstdlib>
+#include <cstring>
 #include "dEntry.hpp"
 #include "security.hpp"
 
@@ -46,7 +47,7 @@ int CommandLine::execute(const std::string &input)
     std::vector<std::string> args = parseInput(input);
     if (args.empty())
     {
-        return 1;
+        return SUCC_RETURN;
     }
 
     auto it = command_map.find(args[0]);
@@ -57,7 +58,7 @@ int CommandLine::execute(const std::string &input)
     else
     {
         std::cerr << "未知命令: " << args[0] << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
 }
 
@@ -65,7 +66,7 @@ int CommandLine::execute(const std::string &input)
 int CommandLine::cmdDir(const std::vector<std::string> &args)
 {
     _dir();
-    return 1;
+    return SUCC_RETURN;
 }
 
 // mkdir 命令
@@ -74,10 +75,10 @@ int CommandLine::cmdMkdir(const std::vector<std::string> &args)
     if (args.size() < 2)
     {
         std::cerr << "mkdir 命令的正确格式为: mkdir <dirname>" << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     mkdir(args[1].c_str());
-    return 1;
+    return SUCC_RETURN;
 }
 
 // cd 命令
@@ -86,10 +87,10 @@ int CommandLine::cmdCd(const std::vector<std::string> &args)
     if (args.size() < 2)
     {
         std::cerr << "cd 命令的正确格式为: cd <dirname>" << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     chdir(args[1].c_str());
-    return 1;
+    return SUCC_RETURN;
 }
 
 // mkfile 命令
@@ -98,7 +99,7 @@ int CommandLine::cmdMkfile(const std::vector<std::string> &args)
     if (args.size() < 2)
     {
         std::cerr << "mkfile 命令的正确格式为: mkfile <filename> [mode]" << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     std::string filename = args[1];
     uint16_t mode = DEFAULTMODE;
@@ -111,10 +112,10 @@ int CommandLine::cmdMkfile(const std::vector<std::string> &args)
     if (fd == -1)
     {
         std::cerr << "创建文件失败！" << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     close(0, fd);
-    return 1;
+    return SUCC_RETURN;
 }
 
 // del 命令
@@ -123,10 +124,10 @@ int CommandLine::cmdDel(const std::vector<std::string> &args)
     if (args.size() < 2)
     {
         std::cerr << "del 命令的正确格式为: del <filename>" << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     removeFile(args[1].c_str());
-    return 1;
+    return SUCC_RETURN;
 }
 
 // write 命令
@@ -134,25 +135,33 @@ int CommandLine::cmdWrite(const std::vector<std::string> &args)
 {
     if (args.size() < 3)
     {
-        std::cerr << "write 命令的正确格式为: write <filename> <bytes>" << std::endl;
-        return 1;
+        std::cerr << "用法: write <filename> <data>" << std::endl;
+        return SUCC_RETURN;
     }
-    std::string filename = args[1];
-    uint32_t size = std::stoi(args[2]);
-    short mode = WRITE;
 
-    int fd = open(0, filename.c_str(), (char)mode);
-    if (fd == -1)
+    std::string filename = args[1];
+    std::string data = args[2]; // 要写入的内容
+
+    // 打开文件
+    short mode = FWRITE; // 写模式
+    int file_id = open(0, filename.c_str(), mode);
+    if (file_id == -1)
     {
-        std::cerr << "无法打开文件: " << filename << std::endl;
-        return 1;
+        std::cerr << "错误: 无法打开文件 '" << filename << "'，请检查路径和权限。" << std::endl;
+        return SUCC_RETURN;
     }
-    char *buf = (char *)malloc(size);
-    size = write(fd, buf, size);
-    std::cout << size << " bytes 已写入文件 " << filename << "." << std::endl;
-    free(buf);
-    close(0, fd);
-    return 1;
+
+    // 调用 write 函数写入数据
+    uint32_t size = data.size();
+    char *buf = (char *)malloc(size + 1);
+    strcpy(buf, data.c_str());
+    uint32_t written_size = write(file_id, buf, size);
+
+    std::cout << written_size << " 字节数据已写入文件 '" << filename << "'。" << std::endl;
+
+    // 关闭文件
+    close(0, file_id);
+    return SUCC_RETURN;
 }
 
 // read 命令
@@ -161,7 +170,7 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
     if (args.size() < 3)
     {
         std::cerr << "read 命令的正确格式为: read <filename> <bytes>" << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     std::string filename = args[1];
     uint32_t size = std::stoi(args[2]);
@@ -170,18 +179,18 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
     if (fd == -1)
     {
         std::cerr << "无法打开文件: " << filename << std::endl;
-        return 1;
+        return SUCC_RETURN;
     }
     char *buf = (char *)malloc(size + 1);
     size = read(fd, buf, size);
     std::cout << size << " bytes 已从文件 " << filename << " 读取到缓冲区." << std::endl;
     free(buf);
     close(0, fd);
-    return 1;
+    return SUCC_RETURN;
 }
 
 // exit 命令
 int CommandLine::cmdExit(const std::vector<std::string> &args)
 {
-    return 0;
+    return EXIT_RETURN;
 }

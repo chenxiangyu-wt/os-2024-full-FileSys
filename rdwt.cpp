@@ -44,21 +44,21 @@ uint32_t read(int fd, char *buf, uint32_t size)
 	return size;
 }
 
-uint32_t write(int fd, char *buf, uint32_t size)
+uint32_t write(int file_id, char *buf, uint32_t size)
 {
 	unsigned long off;
 	uint32_t block, block_off, i, j;
-	struct MemoryINode *inode;
+	MemoryINode *inode;
 	char *temp_buf;
 
-	inode = system_opened_file[user[user_id].open_files[fd]].inode;
-	if (!(system_opened_file[user[user_id].open_files[fd]].flag & FWRITE))
+	inode = system_opened_file[user[user_id].open_files[file_id]].inode;
+	if (!(system_opened_file[user[user_id].open_files[file_id]].flag & FWRITE))
 	{
 		printf("\nthe file is not opened for write\n");
 		return 0;
 	}
 	// add by liwen to check the filesize and alloc the BLOCK
-	off = system_opened_file[user[user_id].open_files[fd]].offset;
+	off = system_opened_file[user[user_id].open_files[file_id]].offset;
 	block = ((off + size) - inode->file_size) / BLOCK_SIZE; // ÉÐÐè¸öÊý
 	if (((off + size) - inode->file_size) % BLOCK_SIZE)
 		block++;
@@ -85,7 +85,7 @@ uint32_t write(int fd, char *buf, uint32_t size)
 	// end add
 	temp_buf = buf;
 
-	off = system_opened_file[user[user_id].open_files[fd]].offset;
+	off = system_opened_file[user[user_id].open_files[file_id]].offset;
 	block_off = off % BLOCK_SIZE;
 	block = off / BLOCK_SIZE;
 
@@ -104,6 +104,6 @@ uint32_t write(int fd, char *buf, uint32_t size)
 	}
 	block_off = (size - (BLOCK_SIZE - block_off)) % BLOCK_SIZE;
 	memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, temp_buf, block_off);
-	system_opened_file[user[user_id].open_files[fd]].offset += size;
+	system_opened_file[user[user_id].open_files[file_id]].offset += size;
 	return size;
 }

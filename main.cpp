@@ -8,7 +8,7 @@
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;
-File system_opened_file[SYSOPENFILE];
+File system_opened_file[SYSTEM_MAX_OPEN_FILE_NUM];
 FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];

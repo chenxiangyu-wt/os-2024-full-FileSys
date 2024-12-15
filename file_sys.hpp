@@ -7,7 +7,7 @@
 
 // All Defines
 constexpr int BLOCK_SIZE = 512; // Size of each block
-constexpr int SYSOPENFILE = 40;
+constexpr int SYSTEM_MAX_OPEN_FILE_NUM = 40;
 
 constexpr int NHINO = 128; // Hash number, must be power of 2
 

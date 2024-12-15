@@ -19,10 +19,10 @@ void halt()
 		{
 			for (j = 0; j < NOFILE; j++)
 			{
-				if (user[i].open_files[j] != SYSOPENFILE + 1)
+				if (user[i].open_files[j] != SYSTEM_MAX_OPEN_FILE_NUM + 1)
 				{
 					close(i, j);
-					user[i].open_files[j] = SYSOPENFILE + 1;
+					user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
 				} // if
 			} // for
 		} // if

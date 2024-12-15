@@ -63,7 +63,7 @@ void install()
 
 	// 3. 初始化系统打开文件表
 	std::cout << "Step 3: Initializing system open file table..." << std::endl;
-	for (uint32_t i = 0; i < SYSOPENFILE; i++)
+	for (uint32_t i = 0; i < SYSTEM_MAX_OPEN_FILE_NUM; i++)
 	{
 		system_opened_file[i].reference_count = 0; // 设置引用计数为0
 		system_opened_file[i].inode = nullptr;	   // 清空 inode 指针
@@ -77,7 +77,7 @@ void install()
 		user[i].group_id = 0; // 设置用户组ID为0
 		for (uint32_t j = 0; j < NOFILE; j++)
 		{
-			user[i].open_files[j] = SYSOPENFILE + 1; // 所有文件描述符初始化为未使用状态
+			user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1; // 所有文件描述符初始化为未使用状态
 		}
 	}
 

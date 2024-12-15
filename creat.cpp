@@ -51,7 +51,7 @@ int creat(uint32_t user_id, const char *filename, uint16_t mode)
 		inode->file_size = 0;
 
 		// 重置已打开文件的偏移量
-		for (i = 0; i < SYSOPENFILE; i++)
+		for (i = 0; i < SYSTEM_MAX_OPEN_FILE_NUM; i++)
 		{
 			if (system_opened_file[i].reference_count != 0 && system_opened_file[i].inode == inode)
 			{
