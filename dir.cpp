@@ -11,6 +11,7 @@ void _dir()
 
 	// 打印当前目录信息
 	printf("\nCURRENT DIRECTORY: %s\n", dir.entries[0].name);
+
 	printf("当前共有 %d 个文件/目录\n", dir.entry_count);
 
 	// 遍历当前目录的所有有效项
