@@ -108,13 +108,13 @@ int CommandLine::cmdMkfile(const std::vector<std::string> &args)
         sscanf(args[2].c_str(), "%ho", &mode);
     }
     mode |= DIFILE | 0700;
-    int fd = creat(0, filename.c_str(), mode);
+    int fd = creatFile(0, filename.c_str(), mode);
     if (fd == -1)
     {
         std::cerr << "创建文件失败！" << std::endl;
         return SUCC_RETURN;
     }
-    close(0, fd);
+    closeFile(0, fd);
     return SUCC_RETURN;
 }
 
@@ -144,7 +144,7 @@ int CommandLine::cmdWrite(const std::vector<std::string> &args)
 
     // 打开文件
     short mode = FWRITE; // 写模式
-    int file_id = open(0, filename.c_str(), mode);
+    int file_id = openFile(0, filename.c_str(), mode);
     if (file_id == -1)
     {
         std::cerr << "错误: 无法打开文件 '" << filename << "'，请检查路径和权限。" << std::endl;
@@ -155,12 +155,12 @@ int CommandLine::cmdWrite(const std::vector<std::string> &args)
     uint32_t size = data.size();
     char *buf = (char *)malloc(size + 1);
     strcpy(buf, data.c_str());
-    uint32_t written_size = write(file_id, buf, size);
+    uint32_t written_size = writeFile(file_id, buf, size);
 
     std::cout << written_size << " 字节数据已写入文件 '" << filename << "'。" << std::endl;
 
     // 关闭文件
-    close(0, file_id);
+    closeFile(0, file_id);
     return SUCC_RETURN;
 }
 
@@ -175,17 +175,17 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
     std::string filename = args[1];
     uint32_t size = std::stoi(args[2]);
 
-    int fd = open(0, filename.c_str(), READ);
+    int fd = openFile(0, filename.c_str(), READ);
     if (fd == -1)
     {
         std::cerr << "无法打开文件: " << filename << std::endl;
         return SUCC_RETURN;
     }
     char *buf = (char *)malloc(size + 1);
-    size = read(fd, buf, size);
+    size = readFile(fd, buf, size);
     std::cout << size << " bytes 已从文件 " << filename << " 读取到缓冲区." << std::endl;
     free(buf);
-    close(0, fd);
+    closeFile(0, fd);
     return SUCC_RETURN;
 }
 

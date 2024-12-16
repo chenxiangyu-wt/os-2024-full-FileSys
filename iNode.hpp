@@ -48,7 +48,6 @@ extern MemoryINode *iget(uint32_t);
 extern void iput(MemoryINode *);
 extern MemoryINode *ialloc();
 extern void ifree(uint32_t);
-int namei(const char *filename, uint16_t type);
-extern uint16_t iname(const char *);
+
 void load_inode_data_blocks(MemoryINode *inode, void *buffer, uint32_t buffer_size);
 #endif // INODE_HPP

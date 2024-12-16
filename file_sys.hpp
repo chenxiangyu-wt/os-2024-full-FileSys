@@ -61,7 +61,7 @@ extern void bfree(uint32_t);
 
 extern void install();
 extern void format();
-extern void close(uint32_t, uint16_t);
+extern void closeFile(uint32_t, uint16_t);
 extern void halt();
 
 #endif
