@@ -3,6 +3,7 @@
 #include <iostream>
 #include "file_sys.hpp"
 #include "globals.hpp"
+#include "dEntry.hpp"
 
 void _dir()
 {
@@ -11,6 +12,7 @@ void _dir()
 
 	// 打印当前目录信息
 	printf("\nCURRENT DIRECTORY: %s\n", dir.entries[0].name);
+
 	printf("当前共有 %d 个文件/目录\n", dir.entry_count);
 
 	// 遍历当前目录的所有有效项
@@ -63,11 +65,17 @@ void mkdir(const char *dirname)
 	found_inode_id = namei(dirname, DENTRY_DIR);
 	if (found_inode_id != -1)
 	{
+		// 目录已存在
 		inode = iget(found_inode_id);
-		if (inode->mode & DIDIR)
-			printf("目录%s已存在！\n", dirname); // xiao
-		else
-			printf("%s是一个文件！\n", dirname);
+		printf("目录%s已存在！\n", dirname);
+		// if (inode->mode & DIDIR)
+		// {
+		// 	printf("目录%s已存在！\n", dirname); // xiao
+		// }
+		// else
+		// {
+		// 	printf("%s是一个文件！\n", dirname);
+		// }
 		iput(inode);
 		return;
 	}

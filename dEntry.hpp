@@ -33,9 +33,11 @@ struct Directory
 extern void _dir();
 extern void mkdir(const char *);
 extern void chdir(const char *);
-extern short open(int, const char *, char);
-extern int creat(uint32_t, const char *, uint16_t);
-extern uint32_t read(int fd, char *buf, uint32_t size);
-extern uint32_t write(int fd, char *buf, uint32_t size);
+extern short openFile(int, const char *, char);
+extern int creatFile(uint32_t, const char *, uint16_t);
+extern uint32_t readFile(int fd, char *buf, uint32_t size);
+extern uint32_t writeFile(int fd, char *buf, uint32_t size);
 extern void removeFile(const char *);
+int namei(const char *filename, uint16_t type);
+extern uint16_t iname(const char *);
 #endif // FILESYS_HPP
