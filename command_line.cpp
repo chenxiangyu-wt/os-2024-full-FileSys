@@ -138,33 +138,56 @@ int CommandLine::cmdDel(const std::vector<std::string> &args)
 // write 命令
 int CommandLine::cmdWrite(const std::vector<std::string> &args)
 {
-    if (args.size() < 3)
+    if (args.size() < 4) // 检查参数是否足够
     {
-        std::cerr << "用法: write <filename> <data>" << std::endl;
+        std::cerr << "用法: write <filename> <data> <size>" << std::endl;
         return SUCC_RETURN;
     }
 
     std::string filename = args[1];
-    std::string data = args[2]; // 要写入的内容
+    std::string data = args[2];
+    uint32_t size;
+
+    // 将输入的字节数参数转换为整数
+    try
+    {
+        size = std::stoi(args[3]);
+        if (size == 0)
+        {
+            std::cerr << "错误: 写入字节数必须大于 0。" << std::endl;
+            return SUCC_RETURN;
+        }
+    }
+    catch (const std::invalid_argument &)
+    {
+        std::cerr << "错误: 字节数必须是有效的整数。" << std::endl;
+        return SUCC_RETURN;
+    }
+
+    // 准备缓冲区：截断或填充数据到指定大小
+    char *buf = (char *)malloc(size);
+    memset(buf, 0, size); // 默认用空字符填充
+
+    // 复制用户输入的内容，确保不会超过指定字节数
+    strncpy(buf, data.c_str(), size);
 
     // 打开文件
-    short mode = FWRITE; // 写模式
+    short mode = FWRITE;
     int file_id = openFile(0, filename.c_str(), mode);
     if (file_id == -1)
     {
         std::cerr << "错误: 无法打开文件 '" << filename << "'，请检查路径和权限。" << std::endl;
+        free(buf);
         return SUCC_RETURN;
     }
 
-    // 调用 write 函数写入数据
-    uint32_t size = data.size();
-    char *buf = (char *)malloc(size + 1);
-    strcpy(buf, data.c_str());
+    // 调用 writeFile 写入数据
     uint32_t written_size = writeFile(file_id, buf, size);
 
     std::cout << written_size << " 字节数据已写入文件 '" << filename << "'。" << std::endl;
 
-    // 关闭文件
+    // 释放资源
+    free(buf);
     closeFile(0, file_id);
     return SUCC_RETURN;
 }
@@ -181,16 +204,22 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
     uint32_t size = std::stoi(args[2]);
 
     int fd = openFile(0, filename.c_str(), READ);
-    if (fd == -1)
+    switch (fd)
     {
-        std::cerr << "无法打开文件: " << filename << "文件不存在" << std::endl;
-        return SUCC_RETURN;
+    case -1:
+        std::cerr << "文件不存在！" << std::endl;
+        break;
+    case -2:
+        std::cerr << "权限不足！" << std::endl;
+        break;
+    default:
+        char *buf = (char *)malloc(size + 1);
+        size = readFile(fd, buf, size);
+        std::cout << size << " bytes 已从文件 " << filename << " 读取到缓冲区." << std::endl;
+        free(buf);
+        closeFile(0, fd);
+        break;
     }
-    char *buf = (char *)malloc(size + 1);
-    size = readFile(fd, buf, size);
-    std::cout << size << " bytes 已从文件 " << filename << " 读取到缓冲区." << std::endl;
-    free(buf);
-    closeFile(0, fd);
     return SUCC_RETURN;
 }
 

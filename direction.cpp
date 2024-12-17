@@ -57,7 +57,6 @@ std::string get_current_path()
 		full_path += path_stack.top() + "/";
 		path_stack.pop();
 	}
-
 	return full_path;
 }
 void _dir()
