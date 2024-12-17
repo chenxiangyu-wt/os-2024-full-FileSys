@@ -89,7 +89,12 @@ int CommandLine::cmdCd(const std::vector<std::string> &args)
         std::cerr << "cd 命令的正确格式为: cd <dirname>" << std::endl;
         return SUCC_RETURN;
     }
-    chdir(args[1].c_str());
+    auto res = chdir(args[1].c_str());
+    if (res)
+    {
+        std::cout << "目录切换成功！" << std::endl;
+    }
+
     return SUCC_RETURN;
 }
 
@@ -178,7 +183,7 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
     int fd = openFile(0, filename.c_str(), READ);
     if (fd == -1)
     {
-        std::cerr << "无法打开文件: " << filename << std::endl;
+        std::cerr << "无法打开文件: " << filename << "文件不存在" << std::endl;
         return SUCC_RETURN;
     }
     char *buf = (char *)malloc(size + 1);

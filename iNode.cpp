@@ -178,11 +178,41 @@ void iput(struct MemoryINode *pinode)
     else // 链表中的其他位置
     {
         if (pinode->next)
-            pinode->next->prev = pinode->prev;
+        {
+            if (pinode->prev)
+                pinode->next->prev = pinode->prev;
+            else
+                pinode->next->prev = nullptr;
+        }
+
         if (pinode->prev)
-            pinode->prev->next = pinode->next;
+        {
+            if (pinode->next)
+                pinode->prev->next = pinode->next;
+            else
+                pinode->prev->next = nullptr;
+        }
     }
 
     // 5. 释放内存 i-node
     free(pinode);
+}
+
+MemoryINode *get_parent_inode(MemoryINode *current_inode)
+{
+    DirectoryEntry entries[BLOCK_SIZE / sizeof(DirectoryEntry)];
+
+    // 读取当前目录的第一个数据块
+    memcpy(entries, disk + DATA_START_POINTOR + current_inode->block_addresses[0] * BLOCK_SIZE, sizeof(entries));
+
+    // 遍历目录项，找到 '..' 对应的 inode
+    for (int i = 0; i < BLOCK_SIZE / sizeof(DirectoryEntry); i++)
+    {
+        if (strcmp(entries[i].name, "..") == 0) // 找到父目录项
+        {
+            return iget(entries[i].inode_number); // 返回父目录的内存 inode
+        }
+    }
+
+    return nullptr; // 如果未找到，返回空指针
 }

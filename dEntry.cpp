@@ -45,3 +45,16 @@ uint16_t iname(const char *name)
     strcpy(dir.entries[i].name, name);
     return i;
 }
+
+int find_empty_entry()
+{
+    for (int i = 0; i < ENTRY_NUM; i++)
+    {
+        if (dir.entries[i].inode_number == 0) // 找到空闲项
+        {
+            return i;
+        }
+    }
+    // 如果没有找到空闲项，返回错误码
+    return -1;
+}

@@ -1,19 +1,74 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <stack>
+#include <string>
 #include "file_sys.hpp"
 #include "globals.hpp"
 #include "dEntry.hpp"
+#include "iNode.hpp"
 
+std::string get_current_path()
+{
+	std::stack<std::string> path_stack;
+	MemoryINode *current_inode = cwd; // 当前目录的内存 i-node
+	MemoryINode *parent_inode;
+	bool is_root = false;
+
+	while (!is_root)
+	{
+		if (current_inode->disk_inode_number == 1) // 根目录
+		{
+			is_root = true;
+			break;
+		}
+
+		// 获取父目录的 inode
+		parent_inode = get_parent_inode(current_inode);
+
+		if (!parent_inode)
+		{
+			std::cerr << "Error: Unable to locate parent directory." << std::endl;
+			return "/";
+		}
+
+		// 从父目录中找到当前目录的名称
+		DirectoryEntry parent_entries[BLOCK_SIZE / sizeof(DirectoryEntry)];
+		// std::cout << sizeof(parent_entries) << std::endl;
+		memcpy(parent_entries, disk + DATA_START_POINTOR + parent_inode->block_addresses[0] * BLOCK_SIZE, sizeof(parent_entries));
+
+		for (int i = 0; i < parent_inode->file_size / sizeof(DirectoryEntry); i++)
+		{
+			if (parent_entries[i].inode_number == current_inode->disk_inode_number)
+			{
+				path_stack.push(parent_entries[i].name); // 将目录名压栈
+				break;
+			}
+		}
+
+		// 更新为父目录
+		current_inode = parent_inode;
+	}
+
+	// 拼接路径
+	std::string full_path = "/";
+	while (!path_stack.empty())
+	{
+		full_path += path_stack.top() + "/";
+		path_stack.pop();
+	}
+
+	return full_path;
+}
 void _dir()
 {
 	uint32_t mode;					// 存储权限位
 	struct MemoryINode *temp_inode; // 临时 i-node 指针
 
 	// 打印当前目录信息
-	printf("\nCURRENT DIRECTORY: %s\n", dir.entries[0].name);
-
-	printf("当前共有 %d 个文件/目录\n", dir.entry_count);
+	// std::string cur_path = get_current_path(cwd);
+	// std::cout << "当前目录：" << cur_path << std::endl;
+	std::cout << "目录项数：" << dir.entry_count << std::endl;
 
 	// 遍历当前目录的所有有效项
 	for (int i = 0; i < dir.entry_count; i++) // 使用 entry_count 遍历
@@ -57,59 +112,54 @@ void _dir()
 
 void mkdir(const char *dirname)
 {
-	int found_inode_id, free_dir_entry_index;
-	MemoryINode *inode;
-	DirectoryEntry buf[BLOCK_SIZE / (sizeof(DirectoryEntry))];
-	uint32_t block;
-
-	found_inode_id = namei(dirname, DENTRY_DIR);
-	if (found_inode_id != -1)
+	int entry_index = find_empty_entry();
+	if (entry_index == -1)
 	{
-		// 目录已存在
-		inode = iget(found_inode_id);
-		printf("目录%s已存在！\n", dirname);
-		// if (inode->mode & DIDIR)
-		// {
-		// 	printf("目录%s已存在！\n", dirname); // xiao
-		// }
-		// else
-		// {
-		// 	printf("%s是一个文件！\n", dirname);
-		// }
-		iput(inode);
+		printf("当前目录已满，无法创建目录！\n");
 		return;
 	}
-	free_dir_entry_index = iname(dirname);								 // 取得在addr中的空闲项位置,并将目录名写到此项里
-	inode = ialloc();													 // 分配i节点
-	dir.entries[free_dir_entry_index].inode_number = inode->status_flag; // 设置该目录的磁盘i节点号
-	dir.entry_count++;													 // 目录数++
 
-	strcpy(buf[0].name, ".."); // 子目录的上一层目录 当前目录
-	buf[0].inode_number = cur_path_inode->status_flag;
-	buf[0].type = DENTRY_DIR;
-	strcpy(buf[1].name, ".");
-	buf[1].inode_number = inode->status_flag; // 子目录的本目录 子目录
-	buf[1].type = DENTRY_DIR;
-	dir.entries[free_dir_entry_index].type = DENTRY_DIR;
+	// 分配 inode
+	MemoryINode *new_inode = ialloc();
+	if (!new_inode)
+	{
+		printf("分配 inode 失败！\n");
+		return;
+	}
 
-	block = balloc();
-	memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, buf, BLOCK_SIZE);
+	// 设置当前目录的目录项
+	strcpy(dir.entries[entry_index].name, dirname);
+	dir.entries[entry_index].inode_number = new_inode->disk_inode_number;
+	dir.entries[entry_index].type = DENTRY_DIR;
+	dir.entry_count++;
 
-	inode->file_size = 2 * (sizeof(DirectoryEntry));
-	inode->reference_count = 1;
-	inode->mode = user[user_id].default_mode | DIDIR;
-	inode->owner_uid = user[user_id].user_id;
-	inode->owner_gid = user[user_id].group_id;
-	inode->block_addresses[0] = block;
+	// 初始化新目录的目录项 (.. 和 .)
+	DirectoryEntry new_dir_entries[2];
+	strcpy(new_dir_entries[0].name, ".."); // 父目录
+	new_dir_entries[0].inode_number = cwd->disk_inode_number;
+	new_dir_entries[0].type = DENTRY_DIR;
 
-	iput(inode);
-	return;
+	strcpy(new_dir_entries[1].name, "."); // 当前目录
+	new_dir_entries[1].inode_number = new_inode->disk_inode_number;
+	new_dir_entries[1].type = DENTRY_DIR;
+
+	// 分配数据块并写入目录项
+	uint32_t block = balloc();
+	memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, new_dir_entries, sizeof(new_dir_entries));
+
+	// 初始化新目录的 inode
+	new_inode->file_size = sizeof(new_dir_entries);
+	new_inode->mode = DIDIR | 0755;
+	new_inode->block_addresses[0] = block;
+
+	iput(new_inode);
+	printf("目录 %s 创建成功！\n", dirname);
 }
 
-void chdir(const char *dirname)
+int chdir(const char *dirname)
 {
 	int dirid;
-	struct MemoryINode *inode;
+	MemoryINode *inode;
 	uint16_t block;
 	int j, low = 0, high = 0;
 
@@ -117,13 +167,13 @@ void chdir(const char *dirname)
 	if (dirid == -1)
 	{
 		printf("不存在目录%s！\n", dirname);
-		return;
+		return 0;
 	}
 	inode = iget(dir.entries[dirid].inode_number);
 	if (!(inode->mode & DIDIR))
 	{
 		printf("不是一个目录！\n");
-		return;
+		return 0;
 	}
 	for (int i = 0; i < dir.entry_count; i++)
 	{
@@ -135,34 +185,34 @@ void chdir(const char *dirname)
 			dir.entries[j].inode_number = 0;
 		}
 	}
-	j = cur_path_inode->file_size % BLOCK_SIZE ? 1 : 0;
-	for (uint16_t i = 0; i < cur_path_inode->file_size / BLOCK_SIZE + j; i++)
+	j = cwd->file_size % BLOCK_SIZE ? 1 : 0;
+	for (uint16_t i = 0; i < cwd->file_size / BLOCK_SIZE + j; i++)
 	{
-		bfree(cur_path_inode->block_addresses[i]);
+		bfree(cwd->block_addresses[i]);
 	}
 	for (int i = 0; i < dir.entry_count; i += BLOCK_SIZE / (sizeof(DirectoryEntry)))
 	{
 		block = balloc();
-		cur_path_inode->block_addresses[i] = block;
+		cwd->block_addresses[i] = block;
 		memcpy(disk + DATA_START_POINTOR + block * BLOCK_SIZE, &dir.entries[i], BLOCK_SIZE);
 	}
-	cur_path_inode->file_size = dir.entry_count * (sizeof(DirectoryEntry));
-	iput(cur_path_inode);
-	cur_path_inode = inode;
-
+	cwd->file_size = dir.entry_count * (sizeof(DirectoryEntry));
+	iput(cwd);
+	cwd = inode;
 	j = 0;
+
 	for (uint16_t i = 0; i < inode->file_size / BLOCK_SIZE + 1; i++)
 	{
 		memcpy(&dir.entries[j], disk + DATA_START_POINTOR + inode->block_addresses[i] * BLOCK_SIZE, BLOCK_SIZE);
 		j += BLOCK_SIZE / (sizeof(DirectoryEntry));
 	}
-	dir.entry_count = cur_path_inode->file_size / (sizeof(DirectoryEntry));
+	dir.entry_count = cwd->file_size / (sizeof(DirectoryEntry));
 	for (int i = dir.entry_count; i < ENTRY_NUM; i++)
 	{
 		dir.entries[i].inode_number = 0;
 	}
-
 	// end by xiao
-
-	return;
+	std::cout << "当前inode_number：" << dir.entries[1].inode_number << std::endl;
+	std::cout << "父目录inode_number： " << dir.entries[0].inode_number << std::endl;
+	return 1;
 }
