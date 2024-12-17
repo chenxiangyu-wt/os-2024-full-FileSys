@@ -172,7 +172,7 @@ int CommandLine::cmdWrite(const std::vector<std::string> &args)
     strncpy(buf, data.c_str(), size);
 
     // 打开文件
-    short mode = FWRITE;
+    short mode = WRITE;
     int file_id = openFile(0, filename.c_str(), mode);
     if (file_id == -1)
     {
