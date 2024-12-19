@@ -27,6 +27,8 @@ CommandLine::CommandLine()
     { return cmdWrite(args); };
     command_map["read"] = [this](const std::vector<std::string> &args)
     { return cmdRead(args); };
+    command_map["who"] = [this](const std::vector<std::string> &args)
+    { return cmdWho(args); };
 }
 
 // 输入解析
@@ -227,4 +229,10 @@ int CommandLine::cmdRead(const std::vector<std::string> &args)
 int CommandLine::cmdExit(const std::vector<std::string> &args)
 {
     return EXIT_RETURN;
+}
+
+int CommandLine::cmdWho(const std::vector<std::string> &args)
+{
+    who();
+    return SUCC_RETURN;
 }
