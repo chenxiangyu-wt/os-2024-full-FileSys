@@ -28,6 +28,8 @@ private:
     int cmdWrite(const std::vector<std::string> &args);
     int cmdRead(const std::vector<std::string> &args);
     int cmdExit(const std::vector<std::string> &args);
+    int cmdPwd(const std::vector<std::string> &args);
+    int cmdWho(const std::vector<std::string> &args);
 
 public:
     CommandLine();

@@ -38,12 +38,21 @@ struct UserContext
     uint16_t user_id;            /* 用户 ID */
     uint16_t group_id;           /* 用户组 ID */
     uint16_t open_files[NOFILE]; /* 用户打开文件表 */
-    MemoryINode *cwd;            /* 当前工作目录的内存 i-node 指针 */
+    // MemoryINode *cwd;            /* 当前工作目录的内存 i-node 指针 */
+};
+
+struct UserInfo
+{
+    uint16_t user_id;  // 用户 ID
+    uint16_t group_id; // 组 ID
+    std::string password;
 };
 
 extern uint32_t access(uint32_t, MemoryINode *, uint16_t);
-int login(uint16_t uid, const char *passwd);
+extern int login(uint16_t uid, const char *passwd);
 extern int logout(uint16_t);
-void secret_input(char* password, size_t max_length);
+void secret_input(char *password, size_t max_length);
+extern UserInfo get_user_info();
+extern int who();
 
 #endif // PERMISSIONS_HPP

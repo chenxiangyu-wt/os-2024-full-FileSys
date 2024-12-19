@@ -15,12 +15,10 @@ File system_opened_file[SYSTEM_MAX_OPEN_FILE_NUM];
 FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
-MemoryINode *cur_path_inode;
-
+MemoryINode *cwd;
 
 int user_id;
 uint8_t disk[DISK_SIZE];
-
 
 int main()
 {
@@ -39,8 +37,8 @@ int main()
 		cin >> username;
 		cin.ignore();
 		printf("Password: ");
-		secret_input(password,16);
-		cout<<"user:"<<username<<" password:"<<password<<endl;
+		secret_input(password, 16);
+		cout << "user:" << username << " password:" << password << endl;
 		user_id = login(username, password);
 	}
 
