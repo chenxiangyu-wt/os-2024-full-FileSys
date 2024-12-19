@@ -243,43 +243,47 @@ void closeFile(uint32_t user_id, uint16_t cfd)
 
 uint32_t readFile(int fd, char *buf, uint32_t size)
 {
-    unsigned long off;
-    uint32_t block, block_off, i, j;
-    struct MemoryINode *inode;
-    char *temp_buf;
+    MemoryINode *inode;
+    uint32_t offset, block, block_offset, bytes_to_read, bytes_read = 0;
 
+    // 获取文件的 i-node 和偏移量
     inode = system_opened_file[user[user_id].open_files[fd]].inode;
+    offset = system_opened_file[user[user_id].open_files[fd]].offset;
+
     if (!(system_opened_file[user[user_id].open_files[fd]].flag & FREAD))
     {
-        printf("\nthe file is not opened for read\n");
+        printf("Error: File not opened for reading.\n");
         return 0;
     }
-    temp_buf = buf;
-    off = system_opened_file[user[user_id].open_files[fd]].offset;
-    if ((off + size) > inode->file_size)
+
+    // 确保读取不超过文件大小
+    uint32_t remaining_size = inode->file_size - offset;
+    if (size > remaining_size)
+        size = remaining_size;
+
+    while (bytes_read < size)
     {
-        size = inode->file_size - off;
-    }
-    block_off = off % BLOCK_SIZE;
-    block = off / BLOCK_SIZE;
-    if (block_off + size < BLOCK_SIZE)
-    {
-        memcpy(buf, disk + DATA_START_POINTOR + inode->block_addresses[block] * BLOCK_SIZE + block_off, size);
-        return size;
-    }
-    memcpy(temp_buf, disk + DATA_START_POINTOR + inode->block_addresses[block] * BLOCK_SIZE + block_off, BLOCK_SIZE - block_off);
-    temp_buf += BLOCK_SIZE - block_off;
-    j = (inode->file_size - off - block_off) / BLOCK_SIZE;
-    for (i = 0; i < (size - (BLOCK_SIZE - block_off)) / BLOCK_SIZE; i++)
-    {
-        memcpy(temp_buf, disk + DATA_START_POINTOR + inode->block_addresses[j + i] * BLOCK_SIZE, BLOCK_SIZE);
-        temp_buf += BLOCK_SIZE;
+        block = offset / BLOCK_SIZE;        // 当前数据块索引
+        block_offset = offset % BLOCK_SIZE; // 数据块内的偏移量
+
+        // 计算本次读取的字节数：取最小值
+        bytes_to_read = BLOCK_SIZE - block_offset; // 剩余块内可读字节
+        if (bytes_to_read > (size - bytes_read))   // 剩余待读取字节
+            bytes_to_read = size - bytes_read;
+
+        // 读取数据块内容
+        uint32_t block_address = inode->block_addresses[block];
+        memcpy(buf + bytes_read,
+               disk + DATA_START_POINTOR + block_address * BLOCK_SIZE + block_offset,
+               bytes_to_read);
+
+        bytes_read += bytes_to_read; // 更新已读取的字节数
+        offset += bytes_to_read;     // 更新文件偏移量
     }
 
-    block_off = (size - (BLOCK_SIZE - block_off)) % BLOCK_SIZE;
-    memcpy(temp_buf, disk + DATA_START_POINTOR + i * BLOCK_SIZE, block_off);
-    system_opened_file[user[user_id].open_files[fd]].offset += size;
-    return size;
+    // 更新系统打开文件表中的偏移量
+    system_opened_file[user[user_id].open_files[fd]].offset = offset;
+    return bytes_read;
 }
 
 uint32_t writeFile(int file_id, char *buf, uint32_t size)
@@ -396,4 +400,56 @@ int renameFile(const char *oldname, const char *newname)
 
     printf("File '%s' renamed to '%s' successfully.\n", oldname, newname);
     return 0;
+}
+
+int copyFile(const char *src, const char *dest)
+{
+    int src_fd, dest_fd;
+    char buffer[BLOCK_SIZE];
+    uint32_t bytes_read;
+
+    src_fd = openFile(0, src, FREAD);
+    if (src_fd == -1)
+    {
+        std::cerr << "Error: 无法打开源文件 '" << src << "'\n";
+        return -1;
+    }
+    dest_fd = openFile(0, dest, FWRITE);
+    if (dest_fd == -1)
+    {
+        // 如果目标文件不存在，则创建一个新文件
+        std::cout << "目标文件不存在，正在创建文件...\n";
+        if (creatFile(0, dest, 0644) == -1)
+        {
+            std::cerr << "Error: 无法创建目标文件 '" << dest << "'\n";
+            closeFile(0, src_fd);
+            return -1;
+        }
+
+        dest_fd = openFile(0, dest, FWRITE);
+        if (dest_fd == -1)
+        {
+            std::cerr << "Error: 无法打开目标文件 '" << dest << "'\n";
+            closeFile(0, src_fd);
+            return -1;
+        }
+    }
+
+    while ((bytes_read = readFile(src_fd, buffer, BLOCK_SIZE)) > 0)
+    {
+        if (writeFile(dest_fd, buffer, bytes_read) != bytes_read)
+        {
+            std::cerr << "Error: 写入目标文件时出错！\n";
+            closeFile(0, src_fd);
+            closeFile(0, dest_fd);
+            return -1;
+        }
+    }
+
+    std::cout << "文件复制成功：'" << src << "' -> '" << dest << "'\n";
+
+    closeFile(0, src_fd);
+    closeFile(0, dest_fd);
+
+    return 1; // 成功
 }

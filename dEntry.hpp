@@ -44,5 +44,6 @@ extern uint16_t iname(const char *);
 int find_empty_entry();
 extern int renameFile(const char *oldname, const char *newname);
 extern std::string get_current_path();
+extern int copyFile(const char *src, const char *dest);
 
 #endif // FILESYS_HPP

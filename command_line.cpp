@@ -33,6 +33,8 @@ CommandLine::CommandLine()
     { return cmdPwd(args); };
     command_map["rename"] = [this](const std::vector<std::string> &args)
     { return cmdRename(args); };
+    command_map["cp"] = [this](const std::vector<std::string> &args)
+    { return cmdCopy(args); };
 }
 
 // 输入解析
@@ -259,6 +261,21 @@ int CommandLine::cmdRename(const std::vector<std::string> &args)
     if (res == -1)
     {
         std::cerr << "重命名失败！" << std::endl;
+    }
+    return SUCC_RETURN;
+}
+
+int CommandLine::cmdCopy(const std::vector<std::string> &args)
+{
+    if (args.size() < 3)
+    {
+        std::cerr << "cp 命令的正确格式为: cp <src> <dest>" << std::endl;
+        return SUCC_RETURN;
+    }
+    int res = copyFile(args[1].c_str(), args[2].c_str());
+    if (res == -1)
+    {
+        std::cerr << "复制文件失败！" << std::endl;
     }
     return SUCC_RETURN;
 }

@@ -31,6 +31,7 @@ private:
     int cmdPwd(const std::vector<std::string> &args);
     int cmdWho(const std::vector<std::string> &args);
     int cmdRename(const std::vector<std::string> &args);
+    int cmdCopy(const std::vector<std::string> &args);
 
 public:
     CommandLine();
