@@ -95,7 +95,8 @@ void _dir()
 				uint32_t block_count = (temp_inode->file_size + BLOCK_SIZE - 1) / BLOCK_SIZE; // 计算块数
 				for (uint32_t k = 0; k < block_count; k++)
 				{
-					printf(" %4d", temp_inode->block_addresses[k]); // 打印数据块号
+					// printf(" %4d", temp_inode->block_addresses[k]); // 打印数据块号(倒序显示)
+					printf(" %4d", DATA_BLOCK_AREA_SIZE - temp_inode->block_addresses[k]); // 打印数据块号(正序显示)
 				}
 				printf("\n");
 			}
