@@ -12,7 +12,7 @@ File system_opened_file[SYSTEM_MAX_OPEN_FILE_NUM];
 FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
-MemoryINode *cur_path_inode;
+MemoryINode *cwd;
 
 int user_id;
 uint8_t disk[DISK_SIZE];
@@ -27,14 +27,14 @@ int main()
 
 	printf("Welcome to mini filesystem!\n");
 
-	// while (user_id == -1)
-	// {
-	// 	printf("Login: ");
-	// 	scanf("%d", &username);
-	// 	printf("Password: ");
-	// 	scanf("%s", password);
-	// 	user_id = login(username, password);
-	// }
+	while (user_id == -1)
+	{
+		printf("Login: ");
+		scanf("%d", &username);
+		printf("Password: ");
+		scanf("%s", password);
+		user_id = login(username, password);
+	}
 
 	CommandLine commandLine;
 

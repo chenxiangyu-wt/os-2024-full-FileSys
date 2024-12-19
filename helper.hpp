@@ -1,6 +1,9 @@
 #ifndef HELPER_JPP
 #define HELPER_HPP
 #include <stdint.h>
+#include <iostream>
+#include <vector>
+#include <sstream>
 #include "dEntry.hpp"
 #include "file_sys.hpp"
 void printDirectoryBuffer(DirectoryEntry dir_buf[], int count);

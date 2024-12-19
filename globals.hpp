@@ -26,7 +26,7 @@ extern UserPassword pwd[PWDNUM];
 extern UserContext user[USERNUM];
 
 // 当前路径对应的 i-node
-extern MemoryINode *cur_path_inode;
+extern MemoryINode *cwd;
 
 // 当前用户 ID
 extern int user_id;

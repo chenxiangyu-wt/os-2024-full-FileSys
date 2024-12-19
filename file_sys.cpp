@@ -98,7 +98,7 @@ void format()
     inode->reference_count = 1;
     inode->block_addresses[0] = balloc();
 
-    memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, BLOCK_SIZE);
+    memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, sizeof(passwd));
     iput(inode);
 
     // 7. 将超级块写入磁盘
@@ -149,17 +149,17 @@ void install()
     std::cout << "Step 5: Loading root directory inode and initializing directory..." << std::endl;
 
     // 加载根目录 i-node，编号为1
-    cur_path_inode = iget(1);
-    if (!cur_path_inode)
+    cwd = iget(1);
+    if (!cwd)
     {
         std::cerr << "Error: Failed to load root directory inode." << std::endl;
         return;
     }
 
-    std::cout << "Root inode file size: " << cur_path_inode->file_size << " bytes" << std::endl;
+    std::cout << "Root inode file size: " << cwd->file_size << " bytes" << std::endl;
 
     // 计算根目录的目录项数量
-    dir.entry_count = cur_path_inode->file_size / sizeof(DirectoryEntry);
+    dir.entry_count = cwd->file_size / sizeof(DirectoryEntry);
     std::cout << "Number of directory entries: " << dir.entry_count << std::endl;
 
     // 初始化内存中的目录结构（清空）
@@ -178,7 +178,7 @@ void install()
     // 遍历每个数据块，加载目录项
     for (uint32_t i = 0; i < blocks_needed; i++)
     {
-        uint32_t offset = DATA_START_POINTOR + BLOCK_SIZE * cur_path_inode->block_addresses[i];
+        uint32_t offset = DATA_START_POINTOR + BLOCK_SIZE * cwd->block_addresses[i];
         std::cout << "Loading directory block " << i << " at offset: " << offset << std::endl;
 
         // 计算当前块需要拷贝的目录项数
@@ -195,6 +195,17 @@ void install()
                disk + offset,
                entries_to_copy * sizeof(DirectoryEntry));
     }
+    // 加载密码文件到内存
+    std::cout << "Loading password file into memory..." << std::endl;
+    MemoryINode *password_inode = iget(3);
+    if (!password_inode)
+    {
+        std::cerr << "Error: Failed to load password file inode." << std::endl;
+        return;
+    }
+    // 读取密码文件数据块
+    uint32_t password_block = password_inode->block_addresses[0];
+    memcpy(pwd, disk + DATA_START_POINTOR + password_block * BLOCK_SIZE, sizeof(pwd));
 
     std::cout << "Directory entries loaded successfully." << std::endl;
     std::cout << "File system installation complete." << std::endl;
@@ -206,7 +217,7 @@ void halt()
 
     /*1. write back the current dir */
     chdir("..");
-    iput(cur_path_inode);
+    iput(cwd);
 
     /*2. free the u_ofile and sys_ofile and inode*/
     for (i = 0; i < USERNUM; i++)

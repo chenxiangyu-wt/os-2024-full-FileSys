@@ -36,7 +36,7 @@ struct UserContext
     uint16_t user_id;            /* 用户 ID */
     uint16_t group_id;           /* 用户组 ID */
     uint16_t open_files[NOFILE]; /* 用户打开文件表 */
-    MemoryINode *cwd;            /* 当前工作目录的内存 i-node 指针 */
+    // MemoryINode *cwd;            /* 当前工作目录的内存 i-node 指针 */
 };
 
 extern uint32_t access(uint32_t, MemoryINode *, uint16_t);

@@ -28,7 +28,7 @@ struct MemoryINode
     MemoryINode *next; // 指向下一个 i 节点（用于链表）
     MemoryINode *prev; // 指向前一个 i 节点（用于链表）
 
-    uint8_t status_flag;        // 状态标志（状态标志通常不会太复杂，8 位足够）
+    uint8_t inode_number;       // 状态标志（状态标志通常不会太复杂，8 位足够）
     uint32_t disk_inode_number; // 磁盘 i 节点编号
     uint32_t reference_count;   // 引用计数
 
@@ -48,6 +48,6 @@ extern MemoryINode *iget(uint32_t);
 extern void iput(MemoryINode *);
 extern MemoryINode *ialloc();
 extern void ifree(uint32_t);
+extern MemoryINode *get_parent_inode(MemoryINode *current_inode);
 
-void load_inode_data_blocks(MemoryINode *inode, void *buffer, uint32_t buffer_size);
 #endif // INODE_HPP
