@@ -5,6 +5,9 @@
 #include "file_sys.hpp"
 #include "globals.hpp"
 #include "utils.hpp"
+#include "log.hpp"
+
+using namespace std;
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;
@@ -14,8 +17,11 @@ UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
 MemoryINode *cur_path_inode;
 
+
 int user_id;
 uint8_t disk[DISK_SIZE];
+
+
 int main()
 {
 	int username;
@@ -27,14 +33,16 @@ int main()
 
 	printf("Welcome to mini filesystem!\n");
 
-	// while (user_id == -1)
-	// {
-	// 	printf("Login: ");
-	// 	scanf("%d", &username);
-	// 	printf("Password: ");
-	// 	scanf("%s", password);
-	// 	user_id = login(username, password);
-	// }
+	while (user_id == -1)
+	{
+		printf("Login: ");
+		cin >> username;
+		cin.ignore();
+		printf("Password: ");
+		secret_input(password,16);
+		cout<<"user:"<<username<<" password:"<<password<<endl;
+		user_id = login(username, password);
+	}
 
 	CommandLine commandLine;
 

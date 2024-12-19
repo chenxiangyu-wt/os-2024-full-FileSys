@@ -2,7 +2,11 @@
 #include "globals.hpp"
 #include "security.hpp"
 #include "dEntry.hpp"
+#include <termios.h>
+#include <iostream>
+#include <string.h>
 
+using namespace std;
 /**********************************************************************************
 函数：access
 参数：用户ID号；内存节点；要判断的权限
@@ -38,4 +42,36 @@ uint32_t access(uint32_t user_id, struct MemoryINode *inode, uint16_t mode)
         return 0;
     } // swith
     return 0;
+}
+void secret_input(char* password, size_t max_length) {
+    char ch;
+    size_t i = 0;
+
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);  
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);  
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    while (i < max_length - 1) {  
+        ch = getchar(); 
+        if (ch == 10 || ch == 13) {  
+            break;
+        }
+        if (ch == 127) {  
+            if (i > 0) {
+                --i;
+                std::cout << "\b \b";  
+            }
+        } else {
+            password[i++] = ch;  
+            std::cout << "*";
+        }
+    }
+
+    password[i] = '\0';  
+    std::cout << std::endl;
+
+    // 恢复终端设置
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }

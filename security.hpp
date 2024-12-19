@@ -1,6 +1,8 @@
 #ifndef PERMISSIONS_HPP
 #define PERMISSIONS_HPP
+#define STDIN_FILENO 0
 #include "iNode.hpp"
+#include <stdio.h>
 
 constexpr int NOFILE = 20; // Maximum number of files a user can open
 constexpr int USERNUM = 10;
@@ -42,5 +44,6 @@ struct UserContext
 extern uint32_t access(uint32_t, MemoryINode *, uint16_t);
 int login(uint16_t uid, const char *passwd);
 extern int logout(uint16_t);
+void secret_input(char* password, size_t max_length);
 
 #endif // PERMISSIONS_HPP
