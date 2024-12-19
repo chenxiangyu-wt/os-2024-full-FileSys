@@ -88,27 +88,46 @@ short openFile(int user_id, const char *filename, char openmode)
 
 void removeFile(const char *filename)
 {
-    int dirid;
-    struct MemoryINode *inode;
+    int dir_index;
+    MemoryINode *inode;
 
-    dirid = namei(filename, DENTRY_FILE);
-    if (dirid == -1)
+    dir_index = namei(filename, DENTRY_FILE);
+    if (dir_index == -1)
     {
-        printf("文件不存在，请检查!\n");
+        printf("文件 '%s' 不存在，请检查!\n", filename);
         return;
     }
-    inode = iget(dir.entries[dirid].inode_number);
+
+    inode = iget(dir.entries[dir_index].inode_number);
     if (!(inode->mode & DIFILE))
     {
-        printf("对象不是文件，请检查！\n");
+        printf("对象 '%s' 不是文件，请检查！\n", filename);
         iput(inode);
         return;
     }
-    dir.entries[dirid].inode_number = DIEMPTY;
-    dir.entry_count--;
-    inode->reference_count--;
+
+    printf("正在删除文件 '%s'...\n", filename);
+
+    // 释放数据块
+    uint32_t block_count = (inode->file_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    for (uint32_t i = 0; i < block_count; i++)
+    {
+        bfree(inode->block_addresses[i]);
+    }
+
+    // 释放 inode
     iput(inode);
-    return;
+
+    // 将后续目录项向前移动，覆盖当前删除的项
+    for (int i = dir_index; i < dir.entry_count - 1; i++)
+    {
+        dir.entries[i] = dir.entries[i + 1];
+    }
+
+    // 清空最后一个项（避免残留数据）
+    memset(&dir.entries[dir.entry_count - 1], 0, sizeof(DirectoryEntry));
+
+    dir.entry_count--; // 更新目录有效项计数
 }
 
 /*********************************************************************
