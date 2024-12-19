@@ -2,3 +2,4 @@ out/
 .vscode/
 archive/
 ./out.txt
+disk.img
