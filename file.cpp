@@ -33,7 +33,7 @@ short openFile(int user_id, const char *filename, char openmode)
     {
         printf("\nAccess denied: No permission to open file.\n");
         iput(inode);
-        return -1;
+        return -2;
     }
 
     // 3. 查找系统打开文件表的空闲位置

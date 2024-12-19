@@ -86,7 +86,7 @@ MemoryINode *iget(uint32_t dinodeid)
     // 1. 检查哈希链表中是否已存在该 i-node
     while (temp)
     {
-        if (temp->status_flag == dinodeid) // 已存在
+        if (temp->inode_number == dinodeid) // 已存在
         {
             temp->reference_count++;
             return temp;
@@ -96,32 +96,32 @@ MemoryINode *iget(uint32_t dinodeid)
 
     // 2. 若没有找到，从磁盘加载 i-node
     long addr = DISK_INODE_START_POINTOR + dinodeid * DISK_INODE_SIZE;
-    DiskINode d_inode;
+    DiskINode disk_inode;
 
-    memcpy(&d_inode, disk + addr, sizeof(DiskINode)); // 读取磁盘 i-node
+    memcpy(&disk_inode, disk + addr, sizeof(DiskINode)); // 读取磁盘 i-node
 
     // 3. 分配内存 i-node 并初始化
-    MemoryINode *newinode = (MemoryINode *)malloc(sizeof(MemoryINode));
-    newinode->reference_count = 1;
-    newinode->status_flag = dinodeid;
-    newinode->disk_inode_number = dinodeid;
+    MemoryINode *new_inode = (MemoryINode *)malloc(sizeof(MemoryINode));
+    new_inode->reference_count = 1;
+    new_inode->inode_number = dinodeid;
+    new_inode->disk_inode_number = dinodeid;
 
-    newinode->mode = d_inode.mode;
-    newinode->owner_uid = d_inode.owner_uid;
-    newinode->owner_gid = d_inode.owner_gid;
-    newinode->file_size = d_inode.file_size;
-    memcpy(newinode->block_addresses, d_inode.block_addresses, sizeof(d_inode.block_addresses));
+    new_inode->mode = disk_inode.mode;
+    new_inode->owner_uid = disk_inode.owner_uid;
+    new_inode->owner_gid = disk_inode.owner_gid;
+    new_inode->file_size = disk_inode.file_size;
+    memcpy(new_inode->block_addresses, disk_inode.block_addresses, sizeof(disk_inode.block_addresses));
 
     // 4. 插入哈希链表
-    newinode->next = hinode[inodeid].prev_inode;
-    newinode->prev = nullptr;
+    new_inode->next = hinode[inodeid].prev_inode;
+    new_inode->prev = nullptr;
 
     if (hinode[inodeid].prev_inode)
-        hinode[inodeid].prev_inode->prev = newinode;
+        hinode[inodeid].prev_inode->prev = new_inode;
 
-    hinode[inodeid].prev_inode = newinode;
+    hinode[inodeid].prev_inode = new_inode;
 
-    return newinode;
+    return new_inode;
 }
 
 /* 函数名：	iput							*/

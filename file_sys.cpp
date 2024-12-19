@@ -98,7 +98,7 @@ void format()
     inode->reference_count = 1;
     inode->block_addresses[0] = balloc();
 
-    memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, BLOCK_SIZE);
+    memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, sizeof(passwd));
     iput(inode);
 
     // 7. 将超级块写入磁盘
@@ -195,6 +195,17 @@ void install()
                disk + offset,
                entries_to_copy * sizeof(DirectoryEntry));
     }
+    // 加载密码文件到内存
+    std::cout << "Loading password file into memory..." << std::endl;
+    MemoryINode *password_inode = iget(3);
+    if (!password_inode)
+    {
+        std::cerr << "Error: Failed to load password file inode." << std::endl;
+        return;
+    }
+    // 读取密码文件数据块
+    uint32_t password_block = password_inode->block_addresses[0];
+    memcpy(pwd, disk + DATA_START_POINTOR + password_block * BLOCK_SIZE, sizeof(pwd));
 
     std::cout << "Directory entries loaded successfully." << std::endl;
     std::cout << "File system installation complete." << std::endl;

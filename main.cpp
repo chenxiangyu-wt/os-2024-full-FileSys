@@ -27,14 +27,14 @@ int main()
 
 	printf("Welcome to mini filesystem!\n");
 
-	// while (user_id == -1)
-	// {
-	// 	printf("Login: ");
-	// 	scanf("%d", &username);
-	// 	printf("Password: ");
-	// 	scanf("%s", password);
-	// 	user_id = login(username, password);
-	// }
+	while (user_id == -1)
+	{
+		printf("Login: ");
+		scanf("%d", &username);
+		printf("Password: ");
+		scanf("%s", password);
+		user_id = login(username, password);
+	}
 
 	CommandLine commandLine;
 
