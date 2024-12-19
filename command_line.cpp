@@ -29,6 +29,8 @@ CommandLine::CommandLine()
     { return cmdRead(args); };
     command_map["who"] = [this](const std::vector<std::string> &args)
     { return cmdWho(args); };
+    command_map["pwd"] = [this](const std::vector<std::string> &args)
+    { return cmdPwd(args); };
 }
 
 // 输入解析
@@ -234,5 +236,12 @@ int CommandLine::cmdExit(const std::vector<std::string> &args)
 int CommandLine::cmdWho(const std::vector<std::string> &args)
 {
     who();
+    return SUCC_RETURN;
+}
+
+int CommandLine::cmdPwd(const std::vector<std::string> &args)
+{
+    std::string cur_path = get_current_path();
+    std::cout << "当前目录：" << cur_path << std::endl;
     return SUCC_RETURN;
 }
