@@ -42,6 +42,7 @@ extern void removeFile(const char *);
 int namei(const char *filename, uint16_t type);
 extern uint16_t iname(const char *);
 int find_empty_entry();
-std::string get_current_path();
+extern int renameFile(const char *oldname, const char *newname);
+extern std::string get_current_path();
 
 #endif // FILESYS_HPP

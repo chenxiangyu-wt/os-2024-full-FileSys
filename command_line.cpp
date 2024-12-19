@@ -31,6 +31,8 @@ CommandLine::CommandLine()
     { return cmdWho(args); };
     command_map["pwd"] = [this](const std::vector<std::string> &args)
     { return cmdPwd(args); };
+    command_map["rename"] = [this](const std::vector<std::string> &args)
+    { return cmdRename(args); };
 }
 
 // 输入解析
@@ -243,5 +245,20 @@ int CommandLine::cmdPwd(const std::vector<std::string> &args)
 {
     std::string cur_path = get_current_path();
     std::cout << "当前目录：" << cur_path << std::endl;
+    return SUCC_RETURN;
+}
+
+int CommandLine::cmdRename(const std::vector<std::string> &args)
+{
+    if (args.size() < 3)
+    {
+        std::cerr << "rename 命令的正确格式为: rename <oldname> <newname>" << std::endl;
+        return SUCC_RETURN;
+    }
+    int res = renameFile(args[1].c_str(), args[2].c_str());
+    if (res == -1)
+    {
+        std::cerr << "重命名失败！" << std::endl;
+    }
     return SUCC_RETURN;
 }

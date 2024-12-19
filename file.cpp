@@ -357,3 +357,43 @@ uint32_t writeFile(int file_id, char *buf, uint32_t size)
     // 返回实际写入的字节数
     return size - remaining_size;
 }
+
+int renameFile(const char *oldname, const char *newname)
+{
+    int oldname_index, newname_index;
+    MemoryINode *inode;
+
+    // 1. 查找旧文件名
+    oldname_index = namei(oldname, DENTRY_FILE);
+    if (oldname_index == -1)
+    {
+        printf("Error: File '%s' not found.\n", oldname);
+        return -1;
+    }
+
+    // 2. 查找新文件名
+    newname_index = namei(newname, DENTRY_FILE | DENTRY_DIR);
+    if (newname_index != -1)
+    {
+        printf("Error: File '%s' already exists.\n", newname);
+        return -1;
+    }
+
+    // 3. 获取旧文件的 inode
+    inode = iget(dir.entries[oldname_index].inode_number);
+    if (inode == NULL)
+    {
+        printf("Error: Failed to load inode.\n");
+        return -1;
+    }
+
+    // 4. 更新目录项
+    strcpy(dir.entries[oldname_index].name, newname);
+    dir.entries[oldname_index].type = DENTRY_FILE;
+
+    // 5. 释放旧文件名的 inode
+    iput(inode);
+
+    printf("File '%s' renamed to '%s' successfully.\n", oldname, newname);
+    return 0;
+}

@@ -30,6 +30,7 @@ private:
     int cmdExit(const std::vector<std::string> &args);
     int cmdPwd(const std::vector<std::string> &args);
     int cmdWho(const std::vector<std::string> &args);
+    int cmdRename(const std::vector<std::string> &args);
 
 public:
     CommandLine();
