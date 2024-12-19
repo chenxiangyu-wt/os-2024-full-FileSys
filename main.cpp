@@ -5,6 +5,9 @@
 #include "file_sys.hpp"
 #include "globals.hpp"
 #include "utils.hpp"
+#include "log.hpp"
+
+using namespace std;
 
 InodeHashTableEntry hinode[NHINO];
 Directory dir;
@@ -16,6 +19,7 @@ MemoryINode *cwd;
 
 int user_id;
 uint8_t disk[DISK_SIZE];
+
 int main()
 {
 	int username;
@@ -30,9 +34,11 @@ int main()
 	while (user_id == -1)
 	{
 		printf("Login: ");
-		scanf("%d", &username);
+		cin >> username;
+		cin.ignore();
 		printf("Password: ");
-		scanf("%s", password);
+		secret_input(password, 16);
+		cout << "user:" << username << " password:" << password << endl;
 		user_id = login(username, password);
 	}
 
