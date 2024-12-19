@@ -1,7 +1,7 @@
 #ifndef GLOBALS_HPP
 #define GLOBALS_HPP
 
-#include <cstdint> // 添加头文件，确保 uint8_t 可用
+#include <cstdint>
 #include "file_sys.hpp"
 #include "security.hpp"
 #include "iNode.hpp"
@@ -32,6 +32,9 @@ extern MemoryINode *cwd;
 extern int user_id;
 
 // 模拟磁盘的内存区域
-extern uint8_t disk[DISK_SIZE]; // 修改为 uint8_t 类型
+extern uint8_t disk[DISK_SIZE];
+
+// 声明 DISK_FILE（不要赋值）
+extern const char *DISK_FILE;
 
 #endif // GLOBALS_HPP

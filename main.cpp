@@ -16,6 +16,7 @@ FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
 UserContext user[USERNUM];
 MemoryINode *cwd;
+const char *DISK_FILE = "disk.img";
 
 int user_id;
 uint8_t disk[DISK_SIZE];

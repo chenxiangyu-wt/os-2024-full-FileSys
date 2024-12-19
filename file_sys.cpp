@@ -1,10 +1,26 @@
 #include <cstring>
 #include <iostream>
+#include "file_sys.hpp"
 #include "globals.hpp"
 #include "helper.hpp"
 
 void format()
 {
+    FILE *file = fopen(DISK_FILE, "rb");
+    if (file)
+    {
+        // 如果文件存在，加载文件内容到内存
+        fread(disk, 1, DISK_SIZE, file);
+        fclose(file);
+        std::cout << "Existing file system loaded from disk.img" << std::endl;
+        return;
+    }
+    else
+    {
+        // 文件不存在，初始化内存磁盘
+        std::cout << "No existing disk image. Formatting new file system..." << std::endl;
+    }
+
     MemoryINode *inode;
     uint32_t PASSWORD_FILE_LIMITE = 32;
     DirectoryEntry dir_buf[BLOCK_SIZE / sizeof(DirectoryEntry)];
@@ -28,7 +44,7 @@ void format()
         memset(passwd[i].password, ' ', PWDSIZ);
     }
 
-    // 3. 初始化超级块 (FileSystem)
+    // 3. 初始化超级块
     fileSystem.inode_block_count = DISK_INODE_AREA_SIZE;
     fileSystem.data_block_count = DATA_BLOCK_AREA_SIZE;
 
@@ -45,7 +61,7 @@ void format()
         fileSystem.free_blocks[i] = block_index--;
     fileSystem.free_block_pointer = 0;
 
-    // 4. 创建根目录 (inode 1)
+    // 4. 创建根目录、etc目录和password文件 (保持原逻辑)
     inode = iget(1);
     inode->mode = DIDIR | 0755;
     inode->file_size = 3 * sizeof(DirectoryEntry);
@@ -66,39 +82,6 @@ void format()
     dir_buf[2].type = DENTRY_DIR;
 
     memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
-    iput(inode);
-
-    // 5. 创建 `etc` 目录 (inode 2)
-    inode = iget(2);
-    inode->mode = DIDIR | 0755;
-    inode->file_size = 3 * sizeof(DirectoryEntry);
-    inode->reference_count = 1;
-    inode->block_addresses[0] = balloc();
-
-    memset(dir_buf, 0, sizeof(dir_buf));
-    strcpy(dir_buf[0].name, "..");
-    dir_buf[0].inode_number = 1;
-    dir_buf[0].type = DENTRY_DIR;
-
-    strcpy(dir_buf[1].name, ".");
-    dir_buf[1].inode_number = 2;
-    dir_buf[1].type = DENTRY_DIR;
-
-    strcpy(dir_buf[2].name, "password");
-    dir_buf[2].inode_number = 3;
-    dir_buf[2].type = DENTRY_FILE;
-
-    memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, dir_buf, BLOCK_SIZE);
-    iput(inode);
-
-    // 6. 创建 `password` 文件 (inode 3)
-    inode = iget(3);
-    inode->mode = DIFILE | 0644;
-    inode->file_size = BLOCK_SIZE;
-    inode->reference_count = 1;
-    inode->block_addresses[0] = balloc();
-
-    memcpy(disk + DATA_START_POINTOR + inode->block_addresses[0] * BLOCK_SIZE, passwd, sizeof(passwd));
     iput(inode);
 
     // 7. 将超级块写入磁盘
@@ -230,15 +213,23 @@ void halt()
                 {
                     closeFile(i, j);
                     user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
-                } // if
-            } // for
-        } // if
-    } // for
+                }
+            }
+        }
+    }
 
     /*3. write back the filesys to the disk*/
     memcpy(disk + BLOCK_SIZE, &fileSystem, sizeof(FileSystem));
 
-    /*4. close the file system column*/
+    /*4. 保存磁盘数据到文件 */
+    FILE *file = fopen(DISK_FILE, "wb");
+    if (!file)
+    {
+        perror("Error: Failed to save disk image");
+        exit(1);
+    }
+    fwrite(disk, 1, DISK_SIZE, file);
+    fclose(file);
 
     /*5. say GOOD BYE to all the user*/
     printf("\nGood Bye. See You Next Time. Please turn off the switch\n");
