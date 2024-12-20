@@ -54,5 +54,6 @@ extern int logout(uint16_t);
 void secret_input(char *password, size_t max_length);
 extern UserInfo get_user_info();
 extern int who();
+extern int addUser(const char *username, const char *password);
 
 #endif // PERMISSIONS_HPP

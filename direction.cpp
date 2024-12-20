@@ -110,7 +110,7 @@ void _dir()
 	}
 }
 
-void mkdir(const char *dirname)
+void mkdir(const char *dir_path)
 {
 	int entry_index = find_empty_entry();
 	if (entry_index == -1)
@@ -128,7 +128,7 @@ void mkdir(const char *dirname)
 	}
 
 	// 设置当前目录的目录项
-	strcpy(dir.entries[entry_index].name, dirname);
+	strcpy(dir.entries[entry_index].name, dir_path);
 	dir.entries[entry_index].inode_number = new_inode->disk_inode_number;
 	dir.entries[entry_index].type = DENTRY_DIR;
 	dir.entry_count++;
@@ -153,23 +153,29 @@ void mkdir(const char *dirname)
 	new_inode->block_addresses[0] = block;
 
 	iput(new_inode);
-	printf("目录 %s 创建成功！\n", dirname);
+	printf("目录 %s 创建成功！\n", dir_path);
 }
 
-int chdir(const char *dirname)
+int chdir(const char *dir_path)
 {
 	int dirid;
 	MemoryINode *inode;
 	uint16_t block;
 	int j, low = 0, high = 0;
 
-	dirid = namei(dirname, DENTRY_DIR);
-	if (dirid == -1)
+	inode = path_to_inode(dir_path);
+	if (!inode)
 	{
-		printf("不存在目录%s！\n", dirname);
+		printf("目录 %s 不存在！\n", dir_path);
 		return 0;
 	}
-	inode = iget(dir.entries[dirid].inode_number);
+	// dirid = namei(dir_path, DENTRY_DIR);
+	// if (dirid == -1)
+	// {
+	// 	printf("不存在目录%s！\n", dir_path);
+	// 	return 0;
+	// }
+	// inode = iget(dir.entries[dirid].inode_number);
 	if (!(inode->mode & DIDIR))
 	{
 		printf("不是一个目录！\n");

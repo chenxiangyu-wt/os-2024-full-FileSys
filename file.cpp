@@ -6,14 +6,14 @@
 #include "file_sys.hpp"
 #include "globals.hpp"
 
-short openFile(int user_id, const char *filename, char openmode)
+short openFile(int user_id, const char *file_path, char openmode)
 {
     int disk_inode_id;
     MemoryINode *inode;
     uint32_t sys_file_index, user_fd_index;
 
     // 1. 查找目标文件的 inode
-    disk_inode_id = namei(filename, DENTRY_FILE);
+    disk_inode_id = namei(file_path, DENTRY_FILE);
     if (disk_inode_id == 0)
     {
         printf("\nFile does not exist!!!\n");
@@ -23,7 +23,7 @@ short openFile(int user_id, const char *filename, char openmode)
     inode = iget(dir.entries[disk_inode_id].inode_number);
     if (!(inode->mode & DIFILE))
     {
-        printf("%s is not a file!!!\n", filename);
+        printf("%s is not a file!!!\n", file_path);
         iput(inode);
         return -1;
     }
@@ -54,7 +54,7 @@ short openFile(int user_id, const char *filename, char openmode)
     // 4. 查找用户打开文件表的空闲位置
     for (user_fd_index = 0; user_fd_index < NOFILE; user_fd_index++)
     {
-        if (user[user_id].open_files[user_fd_index] == SYSTEM_MAX_OPEN_FILE_NUM + 1)
+        if (users[user_id].open_files[user_fd_index] == SYSTEM_MAX_OPEN_FILE_NUM + 1)
         {
             break;
         }
@@ -80,33 +80,33 @@ short openFile(int user_id, const char *filename, char openmode)
         system_opened_file[sys_file_index].offset = 0;
     }
 
-    user[user_id].open_files[user_fd_index] = sys_file_index; // 关联系统文件表索引
+    users[user_id].open_files[user_fd_index] = sys_file_index; // 关联系统文件表索引
 
     // printf("File '%s' opened successfully. User FD: %d\n", filename, user_fd_index);
     return user_fd_index; // 返回用户的文件描述符
 }
 
-void removeFile(const char *filename)
+void removeFile(const char *file_path)
 {
     int dir_index;
     MemoryINode *inode;
 
-    dir_index = namei(filename, DENTRY_FILE);
+    dir_index = namei(file_path, DENTRY_FILE);
     if (dir_index == -1)
     {
-        printf("文件 '%s' 不存在，请检查!\n", filename);
+        printf("文件 '%s' 不存在，请检查!\n", file_path);
         return;
     }
 
     inode = iget(dir.entries[dir_index].inode_number);
     if (!(inode->mode & DIFILE))
     {
-        printf("对象 '%s' 不是文件，请检查！\n", filename);
+        printf("对象 '%s' 不是文件，请检查！\n", file_path);
         iput(inode);
         return;
     }
 
-    printf("正在删除文件 '%s'...\n", filename);
+    printf("正在删除文件 '%s'...\n", file_path);
 
     // 释放数据块
     uint32_t block_count = (inode->file_size + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -134,13 +134,13 @@ void removeFile(const char *filename)
 函数：creat
 功能：创建文件，存在且可写则覆盖，否则申请i节点，并打开该文件，返回文件指针
 **********************************************************************/
-int creatFile(uint32_t user_id, const char *filename, uint16_t mode)
+int creatFile(uint32_t user_id, const char *file_path, uint16_t mode)
 {
     struct MemoryINode *inode;
     int entry_index, empty_entry_index;
 
     // 1. 查找目录项，查看是否存在同名文件或目录
-    entry_index = namei(filename, DENTRY_FILE | DENTRY_DIR);
+    entry_index = namei(file_path, DENTRY_FILE | DENTRY_DIR);
     if (entry_index != -1)
     {
         inode = iget(dir.entries[entry_index].inode_number);
@@ -156,7 +156,7 @@ int creatFile(uint32_t user_id, const char *filename, uint16_t mode)
         }
         else
         {
-            printf("Error: 文件 %s 已存在，无法重复创建！\n", filename);
+            printf("Error: 文件 %s 已存在，无法重复创建！\n", file_path);
         }
 
         iput(inode);
@@ -164,7 +164,7 @@ int creatFile(uint32_t user_id, const char *filename, uint16_t mode)
     }
 
     // 2. 不存在同名文件，分配新 inode
-    printf("创建新文件: %s\n", filename);
+    printf("创建新文件: %s\n", file_path);
 
     inode = ialloc();
     if (!inode)
@@ -173,7 +173,7 @@ int creatFile(uint32_t user_id, const char *filename, uint16_t mode)
         return -1;
     }
 
-    empty_entry_index = iname(filename);
+    empty_entry_index = iname(file_path);
     if (empty_entry_index == -1)
     {
         printf("Error: Directory is full, cannot create more files.\n");
@@ -181,19 +181,19 @@ int creatFile(uint32_t user_id, const char *filename, uint16_t mode)
         return -1;
     }
 
-    strcpy(dir.entries[empty_entry_index].name, filename);
+    strcpy(dir.entries[empty_entry_index].name, file_path);
     dir.entries[empty_entry_index].inode_number = inode->disk_inode_number;
     dir.entries[empty_entry_index].type = DENTRY_FILE;
     dir.entry_count++;
 
     inode->mode = mode | DIFILE;
-    inode->owner_uid = user[user_id].user_id;
-    inode->owner_gid = user[user_id].group_id;
+    inode->owner_uid = users[user_id].user_id;
+    inode->owner_gid = users[user_id].group_id;
     inode->file_size = 0;
     inode->reference_count = 1;
 
     iput(inode);
-    return openFile(user_id, filename, WRITE);
+    return openFile(user_id, file_path, WRITE);
 }
 
 /******************************************************
@@ -207,14 +207,14 @@ int creatFile(uint32_t user_id, const char *filename, uint16_t mode)
 void closeFile(uint32_t user_id, uint16_t cfd)
 {
     // 1. 验证文件描述符是否合法
-    if (cfd >= NOFILE || user[user_id].open_files[cfd] == SYSTEM_MAX_OPEN_FILE_NUM + 1)
+    if (cfd >= NOFILE || users[user_id].open_files[cfd] == SYSTEM_MAX_OPEN_FILE_NUM + 1)
     {
         printf("Error: Invalid file descriptor or file already closed.\n");
         return;
     }
 
     // 2. 获取系统文件表索引和对应的 inode
-    int sys_file_index = user[user_id].open_files[cfd];
+    int sys_file_index = users[user_id].open_files[cfd];
     MemoryINode *inode = system_opened_file[sys_file_index].inode;
 
     if (inode == NULL)
@@ -230,12 +230,12 @@ void closeFile(uint32_t user_id, uint16_t cfd)
     if (system_opened_file[sys_file_index].reference_count == 0)
     {
         // printf("Releasing inode %d and writing back to disk...\n", inode->disk_inode_number);
-        iput(inode);                                     // iput 函数会检查引用计数并执行释放逻辑
-        system_opened_file[sys_file_index].inode = NULL; // 清空 inode 指针
+        iput(inode);
+        system_opened_file[sys_file_index].inode = NULL;
     }
 
     // 5. 更新用户文件表，标记文件描述符为未使用
-    user[user_id].open_files[cfd] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
+    users[user_id].open_files[cfd] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
 
     // printf("File descriptor %d closed successfully.\n", cfd);
     return;
@@ -247,10 +247,10 @@ uint32_t readFile(int fd, char *buf, uint32_t size)
     uint32_t offset, block, block_offset, bytes_to_read, bytes_read = 0;
 
     // 获取文件的 i-node 和偏移量
-    inode = system_opened_file[user[user_id].open_files[fd]].inode;
-    offset = system_opened_file[user[user_id].open_files[fd]].offset;
+    inode = system_opened_file[users[user_id].open_files[fd]].inode;
+    offset = system_opened_file[users[user_id].open_files[fd]].offset;
 
-    if (!(system_opened_file[user[user_id].open_files[fd]].flag & FREAD))
+    if (!(system_opened_file[users[user_id].open_files[fd]].flag & FREAD))
     {
         printf("Error: File not opened for reading.\n");
         return 0;
@@ -282,7 +282,7 @@ uint32_t readFile(int fd, char *buf, uint32_t size)
     }
 
     // 更新系统打开文件表中的偏移量
-    system_opened_file[user[user_id].open_files[fd]].offset = offset;
+    system_opened_file[users[user_id].open_files[fd]].offset = offset;
     return bytes_read;
 }
 
@@ -295,15 +295,15 @@ uint32_t writeFile(int file_id, char *buf, uint32_t size)
     uint32_t remaining_size = size; // 剩余要写入的数据大小
 
     // 获取文件对应的内存 i-node
-    inode = system_opened_file[user[user_id].open_files[file_id]].inode;
-    if (!(system_opened_file[user[user_id].open_files[file_id]].flag & FWRITE))
+    inode = system_opened_file[users[user_id].open_files[file_id]].inode;
+    if (!(system_opened_file[users[user_id].open_files[file_id]].flag & FWRITE))
     {
         printf("Error: The file is not opened for write.\n");
         return 0;
     }
 
     // 当前写入位置
-    offset = system_opened_file[user[user_id].open_files[file_id]].offset;
+    offset = system_opened_file[users[user_id].open_files[file_id]].offset;
 
     // 计算逻辑块和块内偏移量
     logical_block = offset / BLOCK_SIZE; // 逻辑块号
@@ -356,7 +356,7 @@ uint32_t writeFile(int file_id, char *buf, uint32_t size)
     }
 
     // 更新文件的偏移量
-    system_opened_file[user[user_id].open_files[file_id]].offset = offset;
+    system_opened_file[users[user_id].open_files[file_id]].offset = offset;
 
     // 返回实际写入的字节数
     return size - remaining_size;
@@ -402,34 +402,34 @@ int renameFile(const char *oldname, const char *newname)
     return 0;
 }
 
-int copyFile(const char *src, const char *dest)
+int copyFile(const char *src_path, const char *dest_path)
 {
     int src_fd, dest_fd;
     char buffer[BLOCK_SIZE];
     uint32_t bytes_read;
 
-    src_fd = openFile(0, src, FREAD);
+    src_fd = openFile(0, src_path, FREAD);
     if (src_fd == -1)
     {
-        std::cerr << "Error: 无法打开源文件 '" << src << "'\n";
+        std::cerr << "Error: 无法打开源文件 '" << src_path << "'\n";
         return -1;
     }
-    dest_fd = openFile(0, dest, FWRITE);
+    dest_fd = openFile(0, dest_path, FWRITE);
     if (dest_fd == -1)
     {
         // 如果目标文件不存在，则创建一个新文件
         std::cout << "目标文件不存在，正在创建文件...\n";
-        if (creatFile(0, dest, 0644) == -1)
+        if (creatFile(0, dest_path, 0644) == -1)
         {
-            std::cerr << "Error: 无法创建目标文件 '" << dest << "'\n";
+            std::cerr << "Error: 无法创建目标文件 '" << dest_path << "'\n";
             closeFile(0, src_fd);
             return -1;
         }
 
-        dest_fd = openFile(0, dest, FWRITE);
+        dest_fd = openFile(0, dest_path, FWRITE);
         if (dest_fd == -1)
         {
-            std::cerr << "Error: 无法打开目标文件 '" << dest << "'\n";
+            std::cerr << "Error: 无法打开目标文件 '" << dest_path << "'\n";
             closeFile(0, src_fd);
             return -1;
         }
@@ -446,7 +446,7 @@ int copyFile(const char *src, const char *dest)
         }
     }
 
-    std::cout << "文件复制成功：'" << src << "' -> '" << dest << "'\n";
+    std::cout << "文件复制成功：'" << src_path << "' -> '" << dest_path << "'\n";
 
     closeFile(0, src_fd);
     closeFile(0, dest_fd);

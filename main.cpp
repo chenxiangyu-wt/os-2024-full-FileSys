@@ -14,7 +14,7 @@ Directory dir;
 File system_opened_file[SYSTEM_MAX_OPEN_FILE_NUM];
 FileSystem fileSystem;
 UserPassword pwd[PWDNUM];
-UserContext user[USERNUM];
+UserContext users[USERNUM];
 MemoryINode *cwd;
 const char *DISK_FILE = "disk.img";
 

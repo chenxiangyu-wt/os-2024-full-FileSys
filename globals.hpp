@@ -23,7 +23,7 @@ extern FileSystem fileSystem;
 extern UserPassword pwd[PWDNUM];
 
 // 用户上下文
-extern UserContext user[USERNUM];
+extern UserContext users[USERNUM];
 
 // 当前路径对应的 i-node
 extern MemoryINode *cwd;

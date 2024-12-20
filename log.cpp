@@ -19,7 +19,7 @@ int find_free_user_slot()
 {
 	for (int j = 0; j < USERNUM; j++)
 	{
-		if (user[j].user_id == 0)
+		if (users[j].user_id == 0)
 		{
 			return j; // 找到空闲位置
 		}
@@ -44,9 +44,9 @@ int login(uint16_t uid, const char *passwd)
 	}
 
 	// 将用户信息写入空闲位置
-	user[free_slot].user_id = uid;
-	user[free_slot].group_id = pwd[user_index].group_id;
-	user[free_slot].default_mode = DEFAULTMODE;
+	users[free_slot].user_id = uid;
+	users[free_slot].group_id = pwd[user_index].group_id;
+	users[free_slot].default_mode = DEFAULTMODE;
 
 	return LOGIN_SUCCESS;
 }
@@ -95,7 +95,7 @@ int logout(uint16_t uid)
 
 	for (i = 0; i < USERNUM; i++)
 	{
-		if (uid == user[i].user_id)
+		if (uid == users[i].user_id)
 			break;
 	}
 
@@ -107,14 +107,14 @@ int logout(uint16_t uid)
 
 	for (j = 0; j < NOFILE; j++)
 	{
-		if (user[i].open_files[j] != SYSTEM_MAX_OPEN_FILE_NUM + 1)
+		if (users[i].open_files[j] != SYSTEM_MAX_OPEN_FILE_NUM + 1)
 		{
 			/* iput the inode free the sys_ofile and clear the user_ofile */
-			sys_no = user[i].open_files[j];
+			sys_no = users[i].open_files[j];
 			inode = system_opened_file[sys_no].inode;
 			iput(inode);
 			system_opened_file[sys_no].reference_count--;
-			user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
+			users[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
 		}
 	}
 	return 1;

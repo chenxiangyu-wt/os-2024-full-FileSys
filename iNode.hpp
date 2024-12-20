@@ -49,5 +49,6 @@ extern void iput(MemoryINode *);
 extern MemoryINode *ialloc();
 extern void ifree(uint32_t);
 extern MemoryINode *get_parent_inode(MemoryINode *current_inode);
+extern MemoryINode *path_to_inode(const char *path);
 
 #endif // INODE_HPP

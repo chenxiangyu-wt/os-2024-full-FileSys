@@ -2,7 +2,7 @@
 #include <string.h>
 #include "file_sys.hpp"
 #include "globals.hpp"
-
+#include "iNode.hpp"
 /*
 namei函数：参数：要查找的文件名或者目录名。返回文件对应的内存目录项标号i；如果返回-1表示没有该文件。
 功能：查找文件在当前目录下对应的内存目录项的号；
@@ -13,7 +13,7 @@ int namei(const char *filename, uint16_t type)
     {
         if (strcmp(dir.entries[i].name, filename) == 0 && (dir.entries[i].type & type))
         {
-            return i; // 返回匹配项的索引
+            return i;
         }
     }
     return -1; // 未找到

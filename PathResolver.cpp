@@ -1,60 +1,42 @@
 #include "PathResolver.hpp"
 #include <sstream>
+#include <algorithm>
 
-// 解析路径，返回标准化后的路径
-std::string PathResolver::resolvePath(const std::string &basePath, const std::string &targetPath)
+// 去除路径末尾的 '/'
+std::string removeTrailingSlash(const std::string &path)
 {
-    if (targetPath.empty())
-        return basePath;
+    if (path.size() > 1 && path.back() == '/')
+    {
+        return path.substr(0, path.size() - 1);
+    }
+    return path;
+}
 
+std::string PathResolver::resolve(const std::string &basePath, const std::string &targetPath)
+{
     std::vector<std::string> pathStack;
 
+    std::string cleanBasePath = removeTrailingSlash(basePath);
+    std::string cleanTargetPath = removeTrailingSlash(targetPath);
+
     // 处理绝对路径和相对路径
-    if (targetPath[0] == '/')
+    if (!cleanTargetPath.empty() && cleanTargetPath[0] == '/')
     {
-        // 如果 targetPath 是绝对路径，直接从根目录开始
-        splitAndResolve(targetPath, pathStack);
+        // 绝对路径：从根目录开始
+        pathStack = splitAndNormalize(cleanTargetPath);
     }
     else
     {
-        // 否则从 basePath 开始解析
-        splitAndResolve(basePath, pathStack);
-        splitAndResolve(targetPath, pathStack);
+        // 相对路径：从 cleanBasePath 开始拼接 cleanTargetPath
+        pathStack = splitAndNormalize(cleanBasePath);
+        std::vector<std::string> targetStack = splitAndNormalize(cleanTargetPath);
+        pathStack.insert(pathStack.end(), targetStack.begin(), targetStack.end());
     }
 
-    // 构建最终路径
-    return buildFinalPath(pathStack);
+    return buildPath(pathStack);
 }
 
-// 分割路径并解析
-void PathResolver::splitAndResolve(const std::string &path, std::vector<std::string> &stack)
-{
-    std::istringstream ss(path);
-    std::string part;
-
-    while (std::getline(ss, part, '/'))
-    {
-        if (part.empty() || part == ".")
-        {
-            // 忽略空字符串和当前目录
-            continue;
-        }
-        else if (part == "..")
-        {
-            // 返回上一级目录（弹栈）
-            if (!stack.empty())
-                stack.pop_back();
-        }
-        else
-        {
-            // 普通目录，加入栈
-            stack.push_back(part);
-        }
-    }
-}
-
-// 构建最终路径
-std::string PathResolver::buildFinalPath(const std::vector<std::string> &stack)
+std::string PathResolver::buildPath(const std::vector<std::string> &stack)
 {
     if (stack.empty())
         return "/"; // 根目录
@@ -65,4 +47,31 @@ std::string PathResolver::buildFinalPath(const std::vector<std::string> &stack)
         result += "/" + dir;
     }
     return result;
+}
+std::vector<std::string> PathResolver::splitAndNormalize(const std::string &path)
+{
+    std::vector<std::string> stack;
+    std::istringstream iss(path);
+    std::string token;
+
+    while (std::getline(iss, token, '/'))
+    {
+        if (token.empty() || token == ".")
+        {
+            continue;
+        }
+        if (token == "..")
+        {
+            if (!stack.empty())
+            {
+                stack.pop_back();
+            }
+        }
+        else
+        {
+            stack.push_back(token);
+        }
+    }
+
+    return stack;
 }

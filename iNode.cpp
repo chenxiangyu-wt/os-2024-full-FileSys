@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <stack>
+#include <iostream>
 #include <stdlib.h>
 #include "file_sys.hpp"
 #include "globals.hpp"
+#include "PathResolver.hpp"
 
 static struct DiskINode block_buf[BLOCK_SIZE / DISK_INODE_SIZE]; // 存放i节点的临时数组
 /*****************************************************
@@ -215,4 +218,73 @@ MemoryINode *get_parent_inode(MemoryINode *current_inode)
     }
 
     return nullptr; // 如果未找到，返回空指针
+}
+
+MemoryINode *path_to_inode(const char *path)
+{
+    if (!path || strlen(path) == 0)
+    {
+        std::cerr << "错误: 空路径无效！" << std::endl;
+        return nullptr;
+    }
+
+    // 起始目录: 根目录或当前目录
+    MemoryINode *current_inode = (path[0] == '/') ? iget(1) : cwd;
+    std::string resolved_path;
+    // 解析路径
+    if (path[0] == '/')
+    {
+        resolved_path = path;
+    }
+    else
+    {
+        std::string current_path = get_current_path();
+        resolved_path = PathResolver::resolve(current_path, path);
+    }
+    std::vector<std::string> path_tokens = PathResolver::splitAndNormalize(resolved_path);
+
+    for (const std::string &name : path_tokens)
+    {
+        if (!(current_inode->mode & DIDIR))
+        {
+            std::cerr << "错误: '" << name << "' 不是一个目录！" << std::endl;
+            return nullptr;
+        }
+
+        bool found = false;
+
+        // 遍历当前目录的数据块
+        for (uint32_t block_idx = 0; block_idx < ADDRESS_POINTOR_NUM; ++block_idx)
+        {
+            if (current_inode->block_addresses[block_idx] == 0)
+                break;
+
+            uint32_t entries_per_block = BLOCK_SIZE / sizeof(DirectoryEntry);
+            DirectoryEntry entries[entries_per_block];
+
+            // 读取数据块
+            memcpy(entries, disk + DATA_START_POINTOR + current_inode->block_addresses[block_idx] * BLOCK_SIZE, sizeof(entries));
+
+            for (uint32_t i = 0; i < entries_per_block; ++i)
+            {
+                // 查找目标路径名
+                if (entries[i].inode_number != 0 && strcmp(entries[i].name, name.c_str()) == 0)
+                {
+                    current_inode = iget(entries[i].inode_number);
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                break;
+        }
+
+        if (!found)
+        {
+            std::cerr << "错误: 路径 '" << name << "' 不存在！" << std::endl;
+            return nullptr;
+        }
+    }
+
+    return current_inode;
 }

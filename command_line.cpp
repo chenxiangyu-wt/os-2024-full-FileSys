@@ -35,6 +35,8 @@ CommandLine::CommandLine()
     { return cmdRename(args); };
     command_map["cp"] = [this](const std::vector<std::string> &args)
     { return cmdCopy(args); };
+    command_map["adduser"] = [this](const std::vector<std::string> &args)
+    { return cmdAddUser(args); };
 }
 
 // 输入解析
@@ -203,31 +205,57 @@ int CommandLine::cmdWrite(const std::vector<std::string> &args)
 // read 命令
 int CommandLine::cmdRead(const std::vector<std::string> &args)
 {
-    if (args.size() < 3)
+    if (args.size() != 3)
     {
         std::cerr << "read 命令的正确格式为: read <filename> <bytes>" << std::endl;
         return SUCC_RETURN;
     }
-    std::string filename = args[1];
-    uint32_t size = std::stoi(args[2]);
 
-    int fd = openFile(0, filename.c_str(), READ);
-    switch (fd)
+    std::string filename = args[1];
+    uint32_t size = 0;
+
+    // 检查字节数参数是否合法
+    try
     {
-    case -1:
-        std::cerr << "文件不存在！" << std::endl;
-        break;
-    case -2:
-        std::cerr << "权限不足！" << std::endl;
-        break;
-    default:
-        char *buf = (char *)malloc(size + 1);
-        size = readFile(fd, buf, size);
-        std::cout << size << " bytes 已从文件 " << filename << " 读取到缓冲区." << std::endl;
-        free(buf);
-        closeFile(0, fd);
-        break;
+        size = std::stoi(args[2]); // 转换为整数
+        if (size <= 0)             // 不能为负数或零
+        {
+            throw std::invalid_argument("invalid size");
+        }
     }
+    catch (const std::exception &e)
+    {
+        std::cerr << "错误: 字节数必须是一个正整数。" << std::endl;
+        return SUCC_RETURN;
+    }
+
+    // 文件打开操作
+    int fd = openFile(0, filename.c_str(), READ);
+    if (fd < 0)
+    {
+        std::cerr << "错误: 文件 '" << filename << "' 不存在或权限不足！" << std::endl;
+        return SUCC_RETURN;
+    }
+
+    // 读取数据
+    char *buf = (char *)malloc(size + 1);
+    if (!buf)
+    {
+        std::cerr << "内存分配失败！" << std::endl;
+        closeFile(0, fd);
+        return SUCC_RETURN;
+    }
+
+    size = readFile(fd, buf, size);
+    buf[size] = '\0'; // 确保字符串终止
+
+    std::cout << "从文件 '" << filename << "' 读取的内容：" << std::endl
+              << buf << std::endl;
+
+    // 清理资源
+    free(buf);
+    closeFile(0, fd);
+
     return SUCC_RETURN;
 }
 
@@ -276,6 +304,21 @@ int CommandLine::cmdCopy(const std::vector<std::string> &args)
     if (res == -1)
     {
         std::cerr << "复制文件失败！" << std::endl;
+    }
+    return SUCC_RETURN;
+}
+
+int CommandLine::cmdAddUser(const std::vector<std::string> &args)
+{
+    if (args.size() < 3)
+    {
+        std::cerr << "adduser 命令的正确格式为: adduser <username> <password>" << std::endl;
+        return SUCC_RETURN;
+    }
+    int res = addUser(args[1].c_str(), args[2].c_str());
+    if (res == -1)
+    {
+        std::cerr << "添加用户失败！" << std::endl;
     }
     return SUCC_RETURN;
 }
