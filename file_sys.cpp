@@ -120,11 +120,11 @@ void install()
     std::cout << "Step 4: Initializing user context..." << std::endl;
     for (uint32_t i = 0; i < USERNUM; i++)
     {
-        user[i].user_id = 0;  // 设置用户ID为0（未登录）
-        user[i].group_id = 0; // 设置用户组ID为0
+        users[i].user_id = 0;  // 设置用户ID为0（未登录）
+        users[i].group_id = 0; // 设置用户组ID为0
         for (uint32_t j = 0; j < NOFILE; j++)
         {
-            user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1; // 所有文件描述符初始化为未使用状态
+            users[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1; // 所有文件描述符初始化为未使用状态
         }
     }
 
@@ -205,14 +205,14 @@ void halt()
     /*2. free the u_ofile and sys_ofile and inode*/
     for (i = 0; i < USERNUM; i++)
     {
-        if (user[i].user_id != 0)
+        if (users[i].user_id != 0)
         {
             for (j = 0; j < NOFILE; j++)
             {
-                if (user[i].open_files[j] != SYSTEM_MAX_OPEN_FILE_NUM + 1)
+                if (users[i].open_files[j] != SYSTEM_MAX_OPEN_FILE_NUM + 1)
                 {
                     closeFile(i, j);
-                    user[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
+                    users[i].open_files[j] = SYSTEM_MAX_OPEN_FILE_NUM + 1;
                 }
             }
         }

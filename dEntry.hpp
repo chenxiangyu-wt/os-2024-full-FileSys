@@ -31,6 +31,7 @@ struct Directory
     DirectoryEntry entries[ENTRYNUM]; // 目录项数组
     int entry_count;                  // 当前目录中的有效项数
 };
+
 extern void _dir();
 extern void mkdir(const char *);
 extern int chdir(const char *dirname);
@@ -42,6 +43,8 @@ extern void removeFile(const char *);
 int namei(const char *filename, uint16_t type);
 extern uint16_t iname(const char *);
 int find_empty_entry();
-std::string get_current_path();
+extern int renameFile(const char *oldname, const char *newname);
+extern std::string get_current_path();
+extern int copyFile(const char *src, const char *dest);
 
 #endif // FILESYS_HPP
